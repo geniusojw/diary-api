@@ -1,7 +1,6 @@
 package org.jerrioh.common.util;
 
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import org.jerrioh.common.exception.OdAuthenticationException;
 import org.jerrioh.diary.domain.Account;
@@ -15,21 +14,26 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 public class AuthenticationUtil extends Util {
-	private static final String JWT_SECRET = "NuP7j3DwRfbImWt59Xp6g3J7r4ahOOVd";
-	private static final long JWT_EXPIRATION_IN_MS = TimeUnit.MINUTES.toMillis(10);
+	private static String jwtSecret;
+	private static long jwtExpirationInMs;
+	
+	public static void setUp(String jwtSecret, long jwtExpirationInMs) {
+		AuthenticationUtil.jwtSecret = jwtSecret;
+		AuthenticationUtil.jwtExpirationInMs = jwtExpirationInMs;
+	}
 
 	public static String generateJwt(String userId) {
 		Date now = new Date();
-		Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION_IN_MS);
+		Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
 		return Jwts.builder().setSubject(userId).setIssuedAt(new Date()).setExpiration(expiryDate)
-				.signWith(SignatureAlgorithm.HS512, JWT_SECRET).compact();
+				.signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
 	}
 
 	public static String extractUserIdFromJwt(String jwt) {
 		Jws<Claims> parseClaimsJws;
 		try {
-			parseClaimsJws = Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(jwt);
+			parseClaimsJws = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(jwt);
 		} catch (JwtException e) {
 			OdLogger.error("Jwt exception occured", e.toString());
 			throw new OdAuthenticationException();

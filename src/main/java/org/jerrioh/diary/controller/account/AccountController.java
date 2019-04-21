@@ -13,7 +13,6 @@ import org.jerrioh.diary.domain.Account;
 import org.jerrioh.diary.payload.ApiResponse;
 import org.jerrioh.diary.payload.account.SigninRequest;
 import org.jerrioh.diary.payload.account.SigninResponse;
-import org.jerrioh.diary.payload.account.SignupRequest;
 import org.jerrioh.security.authentication.SigninToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -27,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/account")
 public class AccountController extends AbstractController {
 	@PostMapping(value = "/signup")
-	public ResponseEntity<ApiResponse<Object>> signup(@RequestBody @Valid SignupRequest signupRequest) throws OdException {
+	public ResponseEntity<ApiResponse<SigninResponse>> signup(@RequestBody @Valid SigninRequest signupRequest) throws OdException {
 		List<Account> accounts = accountRepository.findByUserId(signupRequest.getUserId());
 		if (!accounts.isEmpty()) {
 			throw new OdException(OdResponseType.USER_CONFLICT);
@@ -38,7 +37,10 @@ public class AccountController extends AbstractController {
 		account.setPasswordEnc(EncodingUtil.passwordEncode(signupRequest.getPassword()));
 		
 		accountRepository.save(account);
-		return ApiResponse.make(OdResponseType.OK);
+
+		SigninResponse signinResponse = new SigninResponse();
+		signinResponse.setToken(AuthenticationUtil.generateJwt(signupRequest.getUserId()));
+		return ApiResponse.make(OdResponseType.OK, signinResponse);
 	}
 
 	@PostMapping(value = "/signin")

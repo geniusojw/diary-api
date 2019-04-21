@@ -22,25 +22,23 @@ public class OdExceptionHandler {
 		OdLogger.error("Exception occured", e);
 		return ApiResponse.makeWithMessage(OdResponseType.INTERNAL_SERVER_ERROR, e.toString());
 	}
-	
+
 	@ExceptionHandler(value = MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiResponse<Object>> handleException(MethodArgumentNotValidException e) {
-		OdLogger.error("MethodArgumentNotValidException occured", e);
 		List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
-		Set<String> errors = fieldErrors.stream().map(fe -> fe.getField() + ":" + fe.getDefaultMessage()).collect(Collectors.toSet());
+		Set<String> errors = fieldErrors.stream().map(fe -> fe.getField() + ":" + fe.getDefaultMessage())
+				.collect(Collectors.toSet());
 		String responseMessage = String.join(", ", errors);
 		return ApiResponse.makeWithMessage(OdResponseType.BAD_REQUEST, responseMessage);
 	}
 
 	@ExceptionHandler(value = OdException.class)
 	public ResponseEntity<ApiResponse<Object>> handleException(OdException e) {
-		OdLogger.error("ODException occured", e);
 		return ApiResponse.make(e.getOdResponseType(), e.getData());
 	}
 
 	@ExceptionHandler(value = OdAuthenticationException.class)
 	public ResponseEntity<ApiResponse<Object>> handleException(OdAuthenticationException e) {
-		OdLogger.error("ODAuthenticationException occured", e);
 		return ApiResponse.make(OdResponseType.UNAUTHORIZED);
 	}
 }

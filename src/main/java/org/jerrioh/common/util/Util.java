@@ -8,8 +8,4 @@ public abstract class Util {
 	private void throwIllegalStateException() {
 		throw new IllegalStateException("Utility class");
 	}
-	
-	private void setUp() {
-		throw new IllegalStateException("Utility class");
-	}
 }

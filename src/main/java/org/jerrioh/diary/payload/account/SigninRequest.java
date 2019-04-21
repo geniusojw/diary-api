@@ -6,7 +6,7 @@ import javax.validation.constraints.Size;
 public class SigninRequest {
 	@NotNull
 	private String userId;
-	@NotNull @Size(min = 4, max = 10)
+	@NotNull @Size(min = 4, max = 15)
 	private String password;
 
 	public String getUserId() {
