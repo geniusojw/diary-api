@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS account
 
 CREATE TABLE IF NOT EXISTS diary
 (
-  write_day VARCHAR(6) NOT NULL,
+  write_day VARCHAR(8) NOT NULL,
   write_user_id VARCHAR(255) NOT NULL,
   title VARCHAR(200) NULL,
   content VARCHAR(2000) NOT NULL,

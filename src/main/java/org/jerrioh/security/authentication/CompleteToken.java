@@ -12,16 +12,18 @@ public class CompleteToken extends AbstractAuthenticationToken {
 
 	public CompleteToken(Account account, Collection<? extends GrantedAuthority> authorities) {
 		super(authorities);
+		super.setAuthenticated(true);
+
 		this.account = account;
 	}
 
 	@Override
-	public Object getCredentials() {
+	public Object getPrincipal() {
 		return account;
 	}
-
+	
 	@Override
-	public Object getPrincipal() {
+	public Object getCredentials() {
 		return null;
 	}
 }

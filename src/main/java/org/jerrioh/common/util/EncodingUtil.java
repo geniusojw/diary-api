@@ -2,7 +2,7 @@ package org.jerrioh.common.util;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-public class EncodingUtil extends AbstractStatic {
+public class EncodingUtil extends Util {
 	private static BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
 	public static String passwordEncode(String rawPassword) {

@@ -12,12 +12,12 @@ public class JwtToken extends AbstractAuthenticationToken {
 	}
 
 	@Override
-	public Object getCredentials() {
-		return token;
+	public Object getPrincipal() {
+		return null;
 	}
 
 	@Override
-	public Object getPrincipal() {
-		return null;
+	public Object getCredentials() {
+		return token;
 	}
 }

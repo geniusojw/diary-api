@@ -3,52 +3,50 @@ package org.jerrioh.diary.domain;
 import java.io.Serializable;
 
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.Table;
+
+import org.jerrioh.diary.domain.Diary.DiaryPk;
 
 @Entity
 @Table(name = "diary")
+@IdClass(DiaryPk.class)
 public class Diary {
-	@Embeddable
 	public static class DiaryPk implements Serializable {
 		private static final long serialVersionUID = 1L;
-		
-		@Column(name = "write_day")
-		private String writeDay;
-		
-		@Column(name = "write_user_id")
-		private String writeUserId;
 
-		public String getWriteDay() {
-			return writeDay;
-		}
-		public void setWriteDay(String writeDay) {
-			this.writeDay = writeDay;
-		}
-		public String getWriteUserId() {
-			return writeUserId;
-		}
-		public void setWriteUserId(String writeUserId) {
-			this.writeUserId = writeUserId;
-		}
+		@Id @Column(name = "write_day")
+		private String writeDay;
+
+		@Id @Column(name = "write_user_id")
+		private String writeUserId;
 	}
-	
-	@EmbeddedId
-	private DiaryPk diaryPk;
-	
+
+	@Id @Column(name = "write_day")
+	private String writeDay;
+
+	@Id @Column(name = "write_user_id")
+	private String writeUserId;
+
 	@Column(name = "title")
 	private String title;
-	
+
 	@Column(name = "content")
 	private String content;
-	
-	public DiaryPk getDiaryPk() {
-		return diaryPk;
+
+	public String getWriteDay() {
+		return writeDay;
 	}
-	public void setDiaryPk(DiaryPk diaryPk) {
-		this.diaryPk = diaryPk;
+	public void setWriteDay(String writeDay) {
+		this.writeDay = writeDay;
+	}
+	public String getWriteUserId() {
+		return writeUserId;
+	}
+	public void setWriteUserId(String writeUserId) {
+		this.writeUserId = writeUserId;
 	}
 	public String getTitle() {
 		return title;

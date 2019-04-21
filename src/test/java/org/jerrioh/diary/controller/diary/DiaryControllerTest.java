@@ -5,13 +5,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
 import org.jerrioh.diary.domain.Account;
 import org.jerrioh.diary.domain.Diary;
-import org.jerrioh.diary.domain.Diary.DiaryPk;
-import org.jerrioh.diary.service.DiaryService;
+import org.jerrioh.diary.domain.DiaryRepository;
 import org.jerrioh.security.authentication.CompleteToken;
 import org.jerrioh.security.authentication.JwtToken;
 import org.jerrioh.security.authentication.SigninToken;
@@ -42,7 +42,7 @@ public class DiaryControllerTest {
 	private SigninAuthenticationProvider signinAuthenticationProvider;
 
 	@MockBean
-	private DiaryService diaryService;
+	private DiaryRepository diaryRepository;
 	
 	@Before
 	public void setup() {
@@ -59,15 +59,14 @@ public class DiaryControllerTest {
 	public void read() throws Exception {
 		String writeDay = "20190430";
 		String writeUserId = "jerrioh@gmail.com";
-		
+
 		Diary diary = new Diary();
-		DiaryPk diaryPk = new DiaryPk();
-		diaryPk.setWriteDay(writeDay);
-		diaryPk.setWriteUserId(writeUserId);
-		diary.setDiaryPk(diaryPk);
+		diary.setWriteDay(writeDay);
+		diary.setWriteUserId(writeUserId);
 		diary.setTitle("Genius OJW");
 		diary.setContent("역시는 역시 역시군");
-		when(diaryService.read(writeUserId, writeDay)).thenReturn(diary);
+		
+		when(diaryRepository.findByWriteUserIdAndWriteDay(writeUserId, writeDay)).thenReturn(diary);
 		
 		this.mockMvc.perform(get("/diary/20194030").header("token", ""))
 					.andDo(print())

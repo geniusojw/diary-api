@@ -22,11 +22,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-	public static final String ERROR = "/error";
-    public static final String SIGNIN = "/account/signin";
-    public static final String REFRESH_TOKEN = "/account/refresh-token";
-    public static final String TOKEN_BASED_AUTH_ENTRY_POINT = "/**/*";
-
+	private static final String JWT_AUTHENTICATION_URL_PATTERN = "/**/*";
+	private static final String[] IGNORE_AUTHENTICATION_URI_PATTERNS = {
+			"/error", "/account/*",
+			"/", "/favicon.ico", "/**/*.png", "/**/*.gif",
+			"/**/*.svg", "/**/*.jpg", "/**/*.html", "/**/*.css", "/**/*.js" };
+    		
+    
     @Autowired
     private JwtAuthenticationProvider jwtAuthenticationProvider;
     
@@ -57,21 +59,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
 				.authorizeRequests()
-//				.antMatchers("/", "/favicon.ico", "/**/*.png", "/**/*.gif", "/**/*.svg", "/**/*.jpg", "/**/*.html","/**/*.css", "/**/*.js").permitAll()
-//				.antMatchers("/api/auth/**").permitAll()
-//				.antMatchers("/api/user/checkUsernameAvailability", "/api/user/checkEmailAvailability").permitAll()
-//				.antMatchers(HttpMethod.GET, "/api/polls/**", "/api/users/**").permitAll()
-//				.anyRequest().authenticated();
-		
-				.anyRequest().permitAll();
-
-//		http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+				.antMatchers(IGNORE_AUTHENTICATION_URI_PATTERNS).permitAll()
+				.anyRequest().authenticated()
+			.and()
+				.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 	}
 
 	private JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        List<String> pathsToSkip = Arrays.asList(ERROR, SIGNIN, REFRESH_TOKEN);
-		String tokenBasedAuthEntryPoint = TOKEN_BASED_AUTH_ENTRY_POINT;
-		SkipPathRequestMatcher matcher = new SkipPathRequestMatcher(pathsToSkip, tokenBasedAuthEntryPoint);
+		List<String> ignores = Arrays.asList(IGNORE_AUTHENTICATION_URI_PATTERNS);
+		SkipPathRequestMatcher matcher = new SkipPathRequestMatcher(JWT_AUTHENTICATION_URL_PATTERN, ignores);
 		
 		JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(matcher);
 		jwtAuthenticationFilter.setAuthenticationManager(authenticationManagerBean());

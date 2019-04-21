@@ -7,6 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jerrioh.common.util.OdLogger;
 import org.jerrioh.security.authentication.JwtToken;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -29,13 +30,15 @@ public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFil
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
 			Authentication authResult) throws IOException, ServletException {
-		super.successfulAuthentication(request, response, chain, authResult);
-		doFilter(request, response, chain);
+		OdLogger.debug("Jwt authentication succeded");
+		SecurityContextHolder.getContext().setAuthentication(authResult);
+		chain.doFilter(request, response);
 	}
 
 	@Override
 	protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
 			AuthenticationException failed) throws IOException, ServletException {
+		OdLogger.debug("Jwt authentication failed");
 		SecurityContextHolder.clearContext();
 		response.sendError(HttpStatus.UNAUTHORIZED.value());
 	}

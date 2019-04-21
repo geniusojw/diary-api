@@ -1,9 +1,15 @@
 package org.jerrioh.diary.payload.diary;
 
-public class DiaryRequest {
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
+public class DiaryReadResponse {
+	@NotNull
 	private String writeDay;
+	@NotNull
 	private String writeUserId;
 	private String title;
+	@NotNull @Size(min = 1, max = 2000)
 	private String content;
 
 	public String getWriteDay() {

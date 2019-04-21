@@ -4,8 +4,8 @@ import org.jerrioh.common.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Log extends AbstractStatic {
-	private static Logger logger = LoggerFactory.getLogger(Log.class);
+public class OdLogger extends Util {
+	private static Logger logger = LoggerFactory.getLogger(OdLogger.class);
 
 	public static void debug(String format) {
 		getLogger().debug(format);
@@ -68,7 +68,7 @@ public class Log extends AbstractStatic {
 	}
 
 	private static Logger getLogger() {
-		Class<?> clazz = Log.class;
+		Class<?> clazz = OdLogger.class;
 		try {
 			clazz = getLoggerClass();
 		} catch (ClassNotFoundException e) {
@@ -84,7 +84,7 @@ public class Log extends AbstractStatic {
 			int lastIndexOf = className.lastIndexOf(Constant.DOT);
 			String substring = className.substring(lastIndexOf + 1, className.length());
 
-			if (!Log.class.getSimpleName().equals(substring)) {
+			if (!OdLogger.class.getSimpleName().equals(substring)) {
 				return Class.forName(className);
 			}
 		}

@@ -10,21 +10,16 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 public class SkipPathRequestMatcher implements RequestMatcher {  
-    private OrRequestMatcher matchers;
-    private RequestMatcher processingMatcher;
+	private RequestMatcher processingMatcher;
+    private OrRequestMatcher skipMatchers;
 
-    public SkipPathRequestMatcher(List<String> pathsToSkip, String processingPath) {
-        List<RequestMatcher> m = pathsToSkip.stream().map(AntPathRequestMatcher::new).collect(Collectors.toList());
-        
-        matchers = new OrRequestMatcher(m);
+    public SkipPathRequestMatcher(String processingPath, List<String> pathsToSkip) {
         processingMatcher = new AntPathRequestMatcher(processingPath);
+        skipMatchers = new OrRequestMatcher(pathsToSkip.stream().map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
 
     @Override
     public boolean matches(HttpServletRequest request) {
-        if (matchers.matches(request)) {
-            return false;
-        }
-        return processingMatcher.matches(request);
+        return processingMatcher.matches(request) && !skipMatchers.matches(request);
     }
 }

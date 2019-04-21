@@ -1,7 +1,12 @@
 package org.jerrioh.diary.payload.account;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
 public class SignupRequest {
+	@NotNull
 	private String userId;
+	@NotNull @Size(min = 4, max = 10)
 	private String password;
 
 	public String getUserId() {

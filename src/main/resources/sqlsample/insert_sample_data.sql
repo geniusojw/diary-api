@@ -1,3 +1,3 @@
-INSERT INTO account (user_id, password_enc) VALUES ('jerrioh@gmail.com', '3165DD28D60B922F9D54B7639FE539F91FF4A753E3E0C2F573A69D7E69161128');
-INSERT INTO account (user_id, password_enc) VALUES ('jerrioh@naver.com', '3165DD28D60B922F9D54B7639FE539F91FF4A753E3E0C2F573A69D7E69161128');
+INSERT INTO account (user_id, password_enc) VALUES ('jerrioh@gmail.com', '$2a$10$3H7NsGpow4elFYWQNrFLke.gbL8mPK9GnPfMKtvhS8U.Rx7aL/9Hm');
+INSERT INTO account (user_id, password_enc) VALUES ('jerrioh@naver.com', '$2a$10$3H7NsGpow4elFYWQNrFLke.gbL8mPK9GnPfMKtvhS8U.Rx7aL/9Hm');
 INSERT INTO account (user_id, password_enc) VALUES ('1554824411-ABCDEFG', null);
