@@ -35,7 +35,7 @@ public class AuthenticationUtil extends Util {
 		try {
 			parseClaimsJws = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(jwt);
 		} catch (JwtException e) {
-			OdLogger.error("Jwt exception occured", e.toString());
+			OdLogger.error("Jwt exception occured jwt={}, e={}", jwt, e.toString());
 			throw new OdAuthenticationException();
 		}
 		return parseClaimsJws.getBody().getSubject();
