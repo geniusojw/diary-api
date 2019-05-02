@@ -84,6 +84,7 @@ public class DiaryController extends AbstractController {
 			diaryResponse.setWriteUserId(diary.getWriteUserId());
 			diaryResponse.setTitle(diary.getTitle());
 			diaryResponse.setContent(diary.getContent());
+			diaryResponses.add(diaryResponse);
 		}
 		return ApiResponse.make(OdResponseType.OK, diaryResponses);
 	}

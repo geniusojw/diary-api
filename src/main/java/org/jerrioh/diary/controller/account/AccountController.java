@@ -11,8 +11,10 @@ import org.jerrioh.common.util.EncodingUtil;
 import org.jerrioh.diary.controller.AbstractController;
 import org.jerrioh.diary.domain.Account;
 import org.jerrioh.diary.payload.ApiResponse;
+import org.jerrioh.diary.payload.account.RefreshTokenRequest;
 import org.jerrioh.diary.payload.account.SigninRequest;
 import org.jerrioh.diary.payload.account.SigninResponse;
+import org.jerrioh.security.authentication.JwtToken;
 import org.jerrioh.security.authentication.SigninToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -52,6 +54,18 @@ public class AccountController extends AbstractController {
 
 		SigninResponse signinResponse = new SigninResponse();
 		signinResponse.setToken(AuthenticationUtil.generateJwt(signinRequest.getUserId()));
+		return ApiResponse.make(OdResponseType.OK, signinResponse);
+	}
+
+	@PostMapping(value = "/refresh-token")
+	public ResponseEntity<ApiResponse<SigninResponse>> signin(@RequestBody @Valid RefreshTokenRequest refreshTokenRequest) {
+		Authentication preAuthentication = new JwtToken(refreshTokenRequest.getJwt());
+		Authentication postAuthentication = authenticationManager.authenticate(preAuthentication);
+
+		SecurityContextHolder.getContext().setAuthentication(postAuthentication);
+		
+		SigninResponse signinResponse = new SigninResponse();
+		signinResponse.setToken(AuthenticationUtil.generateJwt(AuthenticationUtil.extractUserIdFromJwt(refreshTokenRequest.getJwt())));
 		return ApiResponse.make(OdResponseType.OK, signinResponse);
 	}
 
