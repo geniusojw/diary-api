@@ -24,7 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	private static final String JWT_AUTHENTICATION_URL_PATTERN = "/**/*";
 	private static final String[] IGNORE_AUTHENTICATION_URI_PATTERNS = {
-			"/error", "/account/*",
+			"/error", "/account/signup", "/account/signin",
 			"/", "/favicon.ico", "/**/*.png", "/**/*.gif",
 			"/**/*.svg", "/**/*.jpg", "/**/*.html", "/**/*.css", "/**/*.js" };
     		

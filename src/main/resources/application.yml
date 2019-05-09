@@ -10,10 +10,10 @@ spring:
 
 server:
    port: 80
-
+   
 jwt:
    jwtscret: NuP7j3DwRfbImWt59Xp6g3J7r4ahOOVd
-   jwt-expiration-in-ms: 600000
+   jwt-expiration-in-ms: 60000
 
 #logging:
    #pattern:
