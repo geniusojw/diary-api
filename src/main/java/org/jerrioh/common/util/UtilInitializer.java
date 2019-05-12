@@ -16,6 +16,6 @@ public class UtilInitializer {
 	@PostConstruct
 	public void init() {
 		Long jwtExpiration = Long.parseLong(jwtExpirationInMs);
-		AuthenticationUtil.setUp(jwtSecret, jwtExpiration);
+		JwtUtil.setUp(jwtSecret, jwtExpiration);
 	}
 }

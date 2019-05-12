@@ -8,7 +8,7 @@ import org.jerrioh.common.OdResponseType;
 import org.jerrioh.common.exception.OdAuthenticationException;
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.util.OdLogger;
-import org.jerrioh.diary.payload.ApiResponse;
+import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;

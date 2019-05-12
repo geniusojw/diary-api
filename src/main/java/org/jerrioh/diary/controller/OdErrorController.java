@@ -4,7 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jerrioh.common.OdResponseType;
-import org.jerrioh.diary.payload.ApiResponse;
+import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;

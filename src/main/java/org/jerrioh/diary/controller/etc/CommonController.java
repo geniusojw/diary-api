@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.jerrioh.common.OdResponseType;
 import org.jerrioh.diary.controller.AbstractController;
-import org.jerrioh.diary.payload.ApiResponse;
-import org.jerrioh.diary.payload.application.ApplicationInformation;
+import org.jerrioh.diary.controller.etc.payload.ApplicationInformation;
+import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

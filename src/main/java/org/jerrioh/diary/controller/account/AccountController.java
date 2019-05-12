@@ -1,24 +1,21 @@
 package org.jerrioh.diary.controller.account;
 
-import java.util.List;
-
 import javax.validation.Valid;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jerrioh.common.OdResponseType;
 import org.jerrioh.common.exception.OdException;
-import org.jerrioh.common.util.AuthenticationUtil;
 import org.jerrioh.common.util.EncodingUtil;
-import org.jerrioh.diary.controller.AbstractController;
+import org.jerrioh.common.util.JwtUtil;
+import org.jerrioh.diary.controller.account.payload.AccountRequest;
+import org.jerrioh.diary.controller.account.payload.AccountResponse;
+import org.jerrioh.diary.controller.account.payload.FindPasswordRequest;
+import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Account;
-import org.jerrioh.diary.payload.ApiResponse;
-import org.jerrioh.diary.payload.account.DeleteNonMemberRequest;
-import org.jerrioh.diary.payload.account.SigninRequest;
-import org.jerrioh.diary.payload.account.SigninResponse;
-import org.jerrioh.security.authentication.SigninToken;
+import org.jerrioh.security.authentication.before.AccountSigninToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,66 +23,82 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/account")
-public class AccountController extends AbstractController {
-	@PostMapping(value = "/signup")
-	public ResponseEntity<ApiResponse<SigninResponse>> signup(@RequestBody @Valid SigninRequest signupRequest) throws OdException {
-		List<Account> accounts = accountRepository.findByUserId(signupRequest.getUserId());
-		if (!accounts.isEmpty()) {
+public class AccountController extends AbstractAccountController {
+	
+	@PostMapping(value = "/sign-up")
+	public ResponseEntity<ApiResponse<AccountResponse>> signUp(@RequestBody @Valid AccountRequest request) throws OdException {
+		Account account = accountRepository.findByAccountEmail(request.getAccountEmail());
+		if (account != null) {
 			throw new OdException(OdResponseType.USER_CONFLICT);
 		}
 		
-		Account account = new Account();
-		account.setUserId(signupRequest.getUserId());
-		account.setMemberUserId(signupRequest.getUserId());
-		account.setPasswordEnc(EncodingUtil.passwordEncode(signupRequest.getPassword()));
+		account = new Account();
+		account.setAccountEmail(request.getAccountEmail());
+		account.setPasswordEnc(EncodingUtil.passwordEncode(request.getPassword()));
+		account.setFirstAuthorId(request.getAuthorId());
+		account.setLastAuthorId(request.getAuthorId());
 		
 		accountRepository.save(account);
 		
-		SigninResponse signinResponse = new SigninResponse();
-		signinResponse.setToken(AuthenticationUtil.generateJwt(signupRequest.getUserId()));
-		return ApiResponse.make(OdResponseType.OK, signinResponse);
+		AccountResponse response = new AccountResponse();
+		response.setToken(JwtUtil.generateJwt(request.getAccountEmail()));
+		return ApiResponse.make(OdResponseType.OK, response);
 	}
 
-	@PostMapping(value = "/signin")
-	public ResponseEntity<ApiResponse<SigninResponse>> signin(@RequestBody @Valid SigninRequest signinRequest) {
-		Authentication preAuthentication = new SigninToken(signinRequest.getUserId(), signinRequest.getPassword());
+	@PostMapping(value = "/sign-in")
+	public ResponseEntity<ApiResponse<AccountResponse>> signIn(@RequestBody @Valid AccountRequest request) {
+		Authentication preAuthentication = new AccountSigninToken(request.getAccountEmail(), request.getPassword());
 		Authentication postAuthentication = authenticationManager.authenticate(preAuthentication);
 
-		SecurityContextHolder.getContext().setAuthentication(postAuthentication);
+		Account account = (Account) postAuthentication.getPrincipal();
+		account.setLastAuthorId(request.getAuthorId());
+		accountRepository.save(account);
 		
-		SigninResponse signinResponse = new SigninResponse();
-		signinResponse.setToken(AuthenticationUtil.generateJwt(signinRequest.getUserId()));
-		return ApiResponse.make(OdResponseType.OK, signinResponse);
+		AccountResponse response = new AccountResponse();
+		response.setToken(JwtUtil.generateJwt(request.getAccountEmail()));
+		return ApiResponse.make(OdResponseType.OK, response);
+	}
+
+	@PostMapping(value = "/find-password")
+	public ResponseEntity<ApiResponse<Object>> findPassword(@RequestBody @Valid FindPasswordRequest request) throws OdException {
+		Account account = accountRepository.findByAccountEmail(request.getAccountEmail());
+		if (account == null) {
+			throw new OdException(OdResponseType.USER_NOT_FOUND);
+		}
+
+		// 이메일 발송, 발송실패 시 에러
+		account.setPasswordEnc(EncodingUtil.passwordEncode(generateRandomPassword()));
+		accountRepository.save(account);
+
+		return ApiResponse.make(OdResponseType.OK);
 	}
 
 	@PostMapping(value = "/refresh-token")
-	public ResponseEntity<ApiResponse<SigninResponse>> signin() {
-		Account account = AuthenticationUtil.getAuthenticatedAccount();
+	public ResponseEntity<ApiResponse<AccountResponse>> refreshToken() {
+		Account account = super.getAccount();
 		
-		SigninResponse signinResponse = new SigninResponse();
-		signinResponse.setToken(AuthenticationUtil.generateJwt(account.getUserId()));
-		return ApiResponse.make(OdResponseType.OK, signinResponse);
+		AccountResponse response = new AccountResponse();
+		response.setToken(JwtUtil.generateJwt(account.getAccountEmail()));
+		return ApiResponse.make(OdResponseType.OK, response);
 	}
 
-	@PostMapping(value = "/deleteNonMember")
-	public ResponseEntity<ApiResponse<Object>> deleteNonMember(@RequestBody @Valid DeleteNonMemberRequest deleteNonMemberRequest) {
-		Account account = AuthenticationUtil.getAuthenticatedAccount();
+	@PostMapping(value = "/delete")
+	public ResponseEntity<ApiResponse<Object>> deleteAccount(@RequestBody @Valid AccountRequest request) throws OdException {
+		Account account = super.getAccount();
 		
-		String memberUserId = deleteNonMemberRequest.getMemberUserId();
-		account.setMemberUserId(memberUserId);
+		if (!StringUtils.equals(account.getAccountEmail(), request.getAccountEmail())) {
+			throw new OdException(OdResponseType.UNAUTHORIZED);
+		}
 		
-		accountRepository.save(account);
+		Authentication preAuthentication = new AccountSigninToken(request.getAccountEmail(), request.getPassword());
+		authenticationManager.authenticate(preAuthentication);
 
-		return ApiResponse.make(OdResponseType.OK);
-	}
-	
-	@GetMapping(value = "/about-me")
-	public ResponseEntity<ApiResponse<Object>> aboutMe() throws OdException {
-
+		accountRepository.delete(account);
 		
 		return ApiResponse.make(OdResponseType.OK);
 	}
-	
-	// TODO 회원삭제 api : 계정 삭제, 일기 삭제, 편지 삭제, 별명 삭제
 
+	private String generateRandomPassword() {
+		return RandomStringUtils.randomAlphanumeric(8);
+	}
 }

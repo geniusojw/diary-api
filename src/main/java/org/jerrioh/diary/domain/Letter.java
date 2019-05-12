@@ -1,40 +1,24 @@
 package org.jerrioh.diary.domain;
 
-import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.IdClass;
 import javax.persistence.Table;
-
-import org.jerrioh.diary.domain.Letter.LetterPk;
 
 @Entity
 @Table(name = "letter")
-@IdClass(LetterPk.class)
 public class Letter {
-	public static class LetterPk implements Serializable {
-		private static final long serialVersionUID = 1L;
+	@Id
+	@Column(name = "letter_id")
+	private String letterId;
+	
+	@Column(name = "from_author_id")
+	private String fromAuthorId;
 
-		@Id @Column(name = "write_day")
-		private String writeDay;
-
-		@Id @Column(name = "write_user_id")
-		private String writeUserId;
-
-		@Id @Column(name = "read_user_id")
-		private String readUserId;
-	}
-
-	@Id @Column(name = "write_day")
-	private String writeDay;
-
-	@Id @Column(name = "write_user_id")
-	private String writeUserId;
-
-	@Id @Column(name = "read_user_id")
-	private String readUserId;
+	@Column(name = "to_author_id")
+	private String toAuthorId;
 
 	@Column(name = "title")
 	private String title;
@@ -42,34 +26,54 @@ public class Letter {
 	@Column(name = "content")
 	private String content;
 
-	public String getWriteDay() {
-		return writeDay;
+	@Column(name = "writtenTime")
+	private Date writtenTime;
+
+	public String getLetterId() {
+		return letterId;
 	}
-	public void setWriteDay(String writeDay) {
-		this.writeDay = writeDay;
+
+	public void setLetterId(String letterId) {
+		this.letterId = letterId;
 	}
-	public String getWriteUserId() {
-		return writeUserId;
+
+	public String getFromAuthorId() {
+		return fromAuthorId;
 	}
-	public void setWriteUserId(String writeUserId) {
-		this.writeUserId = writeUserId;
+
+	public void setFromAuthorId(String fromAuthorId) {
+		this.fromAuthorId = fromAuthorId;
 	}
-	public String getReadUserId() {
-		return readUserId;
+
+	public String getToAuthorId() {
+		return toAuthorId;
 	}
-	public void setReadUserId(String readUserId) {
-		this.readUserId = readUserId;
+
+	public void setToAuthorId(String toAuthorId) {
+		this.toAuthorId = toAuthorId;
 	}
+
 	public String getTitle() {
 		return title;
 	}
+
 	public void setTitle(String title) {
 		this.title = title;
 	}
+
 	public String getContent() {
 		return content;
 	}
+
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public Date getWrittenTime() {
+		return writtenTime;
+	}
+
+	public void setWrittenTime(Date writtenTime) {
+		this.writtenTime = writtenTime;
 	}
 }

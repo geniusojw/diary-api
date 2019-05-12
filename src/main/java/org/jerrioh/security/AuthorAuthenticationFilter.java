@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jerrioh.common.util.OdLogger;
-import org.jerrioh.security.authentication.before.AccountJwtToken;
+import org.jerrioh.security.authentication.before.AuthorToken;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -16,21 +16,22 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
-	public JwtAuthenticationFilter(RequestMatcher matcher) {
+public class AuthorAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+	public AuthorAuthenticationFilter(RequestMatcher matcher) {
 		super(matcher);
 	}
 
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-		String token = request.getHeader("token");
-		return this.getAuthenticationManager().authenticate(new AccountJwtToken(token));
+		String authorId = request.getHeader("author-id");
+		String authorCode = request.getHeader("author-code");
+		return this.getAuthenticationManager().authenticate(new AuthorToken(authorId, authorCode));
 	}
 
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
 			Authentication authResult) throws IOException, ServletException {
-		OdLogger.debug("Jwt authentication succeded");
+		OdLogger.debug("Author authentication succeded");
 		SecurityContextHolder.getContext().setAuthentication(authResult);
 		chain.doFilter(request, response);
 	}
@@ -38,7 +39,7 @@ public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFil
 	@Override
 	protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
 			AuthenticationException failed) throws IOException, ServletException {
-		OdLogger.debug("Jwt authentication failed");
+		OdLogger.debug("Author authentication failed");
 		SecurityContextHolder.clearContext();
 		response.sendError(HttpStatus.UNAUTHORIZED.value());
 	}

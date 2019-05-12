@@ -9,21 +9,24 @@ import javax.persistence.Table;
 @Table(name = "account")
 public class Account {
 	@Id
-	@Column(name = "user_id")
-	private String userId;
+	@Column(name = "account_email")
+	private String accountEmail;
 
 	@Column(name = "password_enc")
 	private String passwordEnc;
 
-	@Column(name = "member_user_id")
-	private String memberUserId;
+	@Column(name = "first_author_id")
+	private String firstAuthorId;
 
-	public String getUserId() {
-		return userId;
+	@Column(name = "last_author_id")
+	private String lastAuthorId;
+
+	public String getAccountEmail() {
+		return accountEmail;
 	}
 
-	public void setUserId(String userId) {
-		this.userId = userId;
+	public void setAccountEmail(String accountEmail) {
+		this.accountEmail = accountEmail;
 	}
 
 	public String getPasswordEnc() {
@@ -34,11 +37,19 @@ public class Account {
 		this.passwordEnc = passwordEnc;
 	}
 
-	public String getMemberUserId() {
-		return memberUserId;
+	public String getFirstAuthorId() {
+		return firstAuthorId;
 	}
 
-	public void setMemberUserId(String memberUserId) {
-		this.memberUserId = memberUserId;
+	public void setFirstAuthorId(String firstAuthorId) {
+		this.firstAuthorId = firstAuthorId;
+	}
+
+	public String getLastAuthorId() {
+		return lastAuthorId;
+	}
+
+	public void setLastAuthorId(String lastAuthorId) {
+		this.lastAuthorId = lastAuthorId;
 	}
 }

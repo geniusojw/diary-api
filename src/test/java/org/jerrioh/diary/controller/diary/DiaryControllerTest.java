@@ -5,18 +5,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.jerrioh.diary.controller.account.AccountDiaryController;
 import org.jerrioh.diary.domain.Account;
-import org.jerrioh.diary.domain.Diary;
-import org.jerrioh.diary.domain.DiaryRepository;
-import org.jerrioh.security.authentication.CompleteToken;
-import org.jerrioh.security.authentication.JwtToken;
-import org.jerrioh.security.authentication.SigninToken;
-import org.jerrioh.security.provider.JwtAuthenticationProvider;
-import org.jerrioh.security.provider.SigninAuthenticationProvider;
+import org.jerrioh.diary.domain.AccountDiary;
+import org.jerrioh.diary.domain.repo.AccountDiaryRepository;
+import org.jerrioh.security.authentication.after.CompleteAccountToken;
+import org.jerrioh.security.authentication.before.AccountJwtToken;
+import org.jerrioh.security.authentication.before.AccountSigninToken;
+import org.jerrioh.security.provider.AccountJwtAuthenticationProvider;
+import org.jerrioh.security.provider.AccountSigninAuthenticationProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,44 +29,44 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(DiaryController.class)
+@WebMvcTest(AccountDiaryController.class)
 public class DiaryControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
 	
 	@MockBean
-	private JwtAuthenticationProvider jwtAuthenticationProvider;
+	private AccountJwtAuthenticationProvider jwtAuthenticationProvider;
 	
 	@MockBean
-	private SigninAuthenticationProvider signinAuthenticationProvider;
+	private AccountSigninAuthenticationProvider signinAuthenticationProvider;
 
 	@MockBean
-	private DiaryRepository diaryRepository;
+	private AccountDiaryRepository diaryRepository;
 	
 	@Before
 	public void setup() {
 		Account account = new Account();
-		account.setUserId("jerrioh@gmail.com");
+		account.setAccountEmail("jerrioh@gmail.com");
 		account.setPasswordEnc("");
 		Collection<? extends GrantedAuthority> authorities = Collections.emptyList();
 		
-		when(jwtAuthenticationProvider.authenticate(Mockito.any(JwtToken.class))).thenReturn(new CompleteToken(account, authorities));
-		when(jwtAuthenticationProvider.authenticate(Mockito.any(SigninToken.class))).thenReturn(new CompleteToken(account, authorities));
+		when(jwtAuthenticationProvider.authenticate(Mockito.any(AccountJwtToken.class))).thenReturn(new CompleteAccountToken(account, authorities));
+		when(jwtAuthenticationProvider.authenticate(Mockito.any(AccountSigninToken.class))).thenReturn(new CompleteAccountToken(account, authorities));
 	}
 
 	@Test
 	public void read() throws Exception {
-		String writeDay = "20190430";
-		String writeUserId = "jerrioh@gmail.com";
+		String diaryDate = "20190430";
+		String accountEmail = "jerrioh@gmail.com";
 
-		Diary diary = new Diary();
-		diary.setWriteDay(writeDay);
-		diary.setWriteUserId(writeUserId);
+		AccountDiary diary = new AccountDiary();
+		diary.setDiaryDate(diaryDate);
+		diary.setAccountEmail(accountEmail);
 		diary.setTitle("Genius OJW");
 		diary.setContent("역시는 역시 역시군");
 		
-		when(diaryRepository.findByWriteUserIdAndWriteDay(writeUserId, writeDay)).thenReturn(diary);
+		when(diaryRepository.findByAccountEmailAndDiaryDate(accountEmail, diaryDate)).thenReturn(diary);
 		
 		this.mockMvc.perform(get("/diary/20194030").header("token", ""))
 					.andDo(print())

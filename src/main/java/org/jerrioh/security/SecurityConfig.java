@@ -3,8 +3,9 @@ package org.jerrioh.security;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jerrioh.security.provider.JwtAuthenticationProvider;
-import org.jerrioh.security.provider.SigninAuthenticationProvider;
+import org.jerrioh.security.provider.AccountJwtAuthenticationProvider;
+import org.jerrioh.security.provider.AccountSigninAuthenticationProvider;
+import org.jerrioh.security.provider.AuthorAuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,18 +23,23 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-	private static final String JWT_AUTHENTICATION_URL_PATTERN = "/**/*";
+	private static final String JWT_AUTHENTICATION_URL_PATTERN = "/account/**";
+	private static final String AUTHOR_AUTHENTICATION_URL_PATTERN = "/author/**";
+	
 	private static final String[] IGNORE_AUTHENTICATION_URI_PATTERNS = {
-			"/error", "/account/signup", "/account/signin",
+			"/error", "/account/sign-up", "/account/sign-in", "/author/create",
 			"/", "/favicon.ico", "/**/*.png", "/**/*.gif",
 			"/**/*.svg", "/**/*.jpg", "/**/*.html", "/**/*.css", "/**/*.js" };
     		
     
     @Autowired
-    private JwtAuthenticationProvider jwtAuthenticationProvider;
+    private AccountJwtAuthenticationProvider accountJwtAuthenticationProvider;
     
     @Autowired
-    private SigninAuthenticationProvider signinAuthenticationProvider;
+    private AccountSigninAuthenticationProvider accountSigninAuthenticationProvider;
+    
+    @Autowired
+    private AuthorAuthenticationProvider authorAuthenticationProvider;
     
 	@Bean(BeanIds.AUTHENTICATION_MANAGER)
 	@Override
@@ -43,8 +49,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.authenticationProvider(jwtAuthenticationProvider)
-			.authenticationProvider(signinAuthenticationProvider);
+		auth.authenticationProvider(accountJwtAuthenticationProvider)
+			.authenticationProvider(accountSigninAuthenticationProvider)
+			.authenticationProvider(authorAuthenticationProvider);
 	}
 
 	@Override
@@ -62,7 +69,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers(IGNORE_AUTHENTICATION_URI_PATTERNS).permitAll()
 				.anyRequest().authenticated()
 			.and()
-				.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+				.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+				.addFilterBefore(authorAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 	}
 
 	private JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
@@ -72,5 +80,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(matcher);
 		jwtAuthenticationFilter.setAuthenticationManager(authenticationManagerBean());
 		return jwtAuthenticationFilter;
+	}
+
+	private AuthorAuthenticationFilter authorAuthenticationFilter() throws Exception {
+		List<String> ignores = Arrays.asList(IGNORE_AUTHENTICATION_URI_PATTERNS);
+		SkipPathRequestMatcher matcher = new SkipPathRequestMatcher(AUTHOR_AUTHENTICATION_URL_PATTERN, ignores);
+		
+		AuthorAuthenticationFilter authorAuthenticationFilter = new AuthorAuthenticationFilter(matcher);
+		authorAuthenticationFilter.setAuthenticationManager(authenticationManagerBean());
+		return authorAuthenticationFilter;
 	}
 }
