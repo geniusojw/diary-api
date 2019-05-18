@@ -10,8 +10,8 @@ import javax.validation.Valid;
 import org.jerrioh.common.OdResponseType;
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.diary.controller.account.payload.AccountDiaryResponse;
-import org.jerrioh.diary.controller.account.payload.AccountDiaryRequest;
 import org.jerrioh.diary.controller.payload.ApiResponse;
+import org.jerrioh.diary.controller.account.payload.AccountDiaryRequest;
 import org.jerrioh.diary.domain.Account;
 import org.jerrioh.diary.domain.AccountDiary;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/account/diary")
+@RequestMapping(value = "/account/diaries")
 public class AccountDiaryController extends AbstractAccountController {
 	
 	@GetMapping(value = "/{diaryDate}")

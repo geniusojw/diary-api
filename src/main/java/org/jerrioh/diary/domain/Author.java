@@ -21,6 +21,9 @@ public class Author {
 	@Column(name = "description")
 	private String description;
 
+	@Column(name = "is_deleted")
+	private boolean isDeleted;
+
 	public String getAuthorId() {
 		return authorId;
 	}
@@ -51,5 +54,13 @@ public class Author {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 }

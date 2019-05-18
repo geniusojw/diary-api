@@ -1,4 +1,5 @@
 INSERT INTO author (author_id, author_code, nickname, description) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46811', 'abcd1234ABCD1234', 'genius OJW', 'He is obviously a genius.');
+INSERT INTO author (author_id, author_code, nickname, description) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46812', 'abcd1234ABCD9876', 'Super Man', 'Super Man~~~');
 
 INSERT INTO author_diary (author_id, diary_date, title, content, language, country) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46811', '20190502', '', '다른 복수개의 단말에서 동시에 일기를 쓴다면? 먼저 업로드 된 쪽이 임자인가? 12시에 업로드가 몰리는 현상은 없을까?', 'KOR', 'KOR');
 INSERT INTO author_diary (author_id, diary_date, title, content, language, country) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46811', '20190504', '일기', '테스트 일기', 'KOR', 'KOR');
@@ -13,5 +14,5 @@ INSERT INTO account_diary (account_email, diary_date, title, content) VALUES ('j
 INSERT INTO account_diary (account_email, diary_date, title, content) VALUES ('jerrioh@gmail.com', '20190502', '', '다른 복수개의 단말에서 동시에 일기를 쓴다면? 먼저 업로드 된 쪽이 임자인가? 12시에 업로드가 몰리는 현상은 없을까?');
 INSERT INTO account_diary (account_email, diary_date, title, content) VALUES ('jerrioh@gmail.com', '20190504', '일기', '테스트 일기');
 
-INSERT INTO letter (letter_id, from_author_id, to_author_id, title, content) VALUES ('20190510T090000Z_abcd1234ABCD1234', 'jerrioh@naver.com', 'jerrioh@gmail.com', '나에게로의 편지', '난 천재로군');
-INSERT INTO letter (letter_id, from_author_id, to_author_id, title, content) VALUES ('20190511T090000Z_abcd1234ABCD1234', 'jerrioh@naver.com', 'jerrioh@gmail.com', '나에게로의 편지2', 'ㅇㅇㅈ');
+INSERT INTO letter (letter_id, from_author_id, to_author_id, title, content) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46811-1', '92f44a4e-09ea-4fa5-ab54-df3c10a46811', '92f44a4e-09ea-4fa5-ab54-df3c10a46812', '오정욱이 슈퍼맨에게', 'ㅎㅇ');
+INSERT INTO letter (letter_id, from_author_id, to_author_id, title, content) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46811-2', '92f44a4e-09ea-4fa5-ab54-df3c10a46811', '92f44a4e-09ea-4fa5-ab54-df3c10a46812', '오정욱이 슈퍼맨에게2', 'ㅎㅇ2');

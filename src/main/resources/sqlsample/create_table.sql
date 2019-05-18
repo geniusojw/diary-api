@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS author
   author_code VARCHAR(16) NOT NULL COMMENT 'authentication, code for use on single device',
   nickname VARCHAR(50) NOT NULL,
   description VARCHAR(50) NOT NULL,
+  is_deleted TINYINT NOT NULL COMMENT '0: not deleted, 1: deleted' DEFAULT 0,
   creation_time TIMESTAMP NOT NULL DEFAULT now(),
   modification_time TIMESTAMP NOT NULL DEFAULT now(),
   CONSTRAINT author_pk PRIMARY KEY (author_id)
@@ -42,7 +43,7 @@ CREATE TABLE IF NOT EXISTS account_diary
 
 CREATE TABLE IF NOT EXISTS letter
 (
-  letter_id VARCHAR(300) NOT NULL COMMENT 'timestamp + author_code',
+  letter_id VARCHAR(300) NOT NULL COMMENT 'author_id + sequence',
   from_author_id VARCHAR(255) NOT NULL,
   to_author_id VARCHAR(255) NOT NULL,
   title VARCHAR(80) NULL,

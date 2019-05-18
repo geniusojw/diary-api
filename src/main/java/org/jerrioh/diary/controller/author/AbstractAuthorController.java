@@ -4,6 +4,7 @@ import org.jerrioh.common.exception.OdAuthenticationException;
 import org.jerrioh.diary.controller.AbstractController;
 import org.jerrioh.diary.domain.Author;
 import org.jerrioh.diary.domain.repo.AuthorDiaryRepository;
+import org.jerrioh.diary.domain.repo.AuthorLetterRepository;
 import org.jerrioh.diary.domain.repo.AuthorRepository;
 import org.jerrioh.security.authentication.after.CompleteAuthorToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ public class AbstractAuthorController extends AbstractController {
 	protected AuthorRepository authorRepository;
 	@Autowired
 	protected AuthorDiaryRepository authorDiaryRepository;
+	@Autowired
+	protected AuthorLetterRepository authorLetterRepository;
 
 	protected Author getAuthor() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

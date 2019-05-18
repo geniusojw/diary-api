@@ -11,10 +11,12 @@ public enum OdResponseType {
 	NOT_FOUND(404, 0, "Not Found"),
 	USER_NOT_FOUND(404, 1, "User Not Found"),
 	DIARY_NOT_FOUND(404, 2, "Diary Not Found"),
+	LETTER_NOT_FOUND(404, 3, "Letter Not Found"),
 	
 	CONFLICT(409, 0, "Conflict"),
 	USER_CONFLICT(409, 1, "User Already Exsits"),
 	DIARY_CONFLICT(409, 2, "Diary Already Exsits"),
+	LETTER_CONFLICT(409, 3, "Letter Already Exsits"),
 	
 	INTERNAL_SERVER_ERROR(500, 0, "Internal Server Error");
 	

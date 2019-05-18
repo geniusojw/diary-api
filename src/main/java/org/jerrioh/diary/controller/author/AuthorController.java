@@ -11,6 +11,7 @@ import org.jerrioh.diary.controller.author.payload.AuthorResponse;
 import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Author;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/author")
 public class AuthorController extends AbstractAuthorController {
 	
-	@PostMapping(value = "/create")
+	@PostMapping(value = "/start")
 	public ResponseEntity<ApiResponse<AuthorResponse>> create(@RequestBody @Valid AuthorRequest request) throws OdException {
 		Author author = authorRepository.findByAuthorId(request.getAuthorId());
 		if (author != null) {
@@ -44,6 +45,16 @@ public class AuthorController extends AbstractAuthorController {
 		Author author = super.getAuthor();
 		AuthorResponse response = authorToResponse(author);
 		return ApiResponse.make(OdResponseType.OK, response);
+	}
+	
+	@DeleteMapping
+	public ResponseEntity<ApiResponse<Object>> delete() {
+		Author author = super.getAuthor();
+		
+		author.setDeleted(true);
+		authorRepository.save(author);
+		
+		return ApiResponse.make(OdResponseType.OK);
 	}
 	
 	@PostMapping(value = "/change-nick")

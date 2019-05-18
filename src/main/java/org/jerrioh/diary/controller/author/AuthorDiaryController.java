@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/author/diary")
+@RequestMapping(value = "/author/diaries")
 public class AuthorDiaryController extends AbstractAuthorController {
 	
 	@PostMapping

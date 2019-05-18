@@ -29,7 +29,7 @@ public class AuthorAuthenticationProvider implements AuthenticationProvider {
 		}
 		
 		Author author = authorRepository.findByAuthorIdAndAuthorCode(authorId, authorCode);
-		if (author == null) {
+		if (author == null || author.isDeleted()) {
 			OdLogger.info("Author not found. authorId = {}, authorCode = {}", authorId, authorCode);
 			throw new OdAuthenticationException();
 		}

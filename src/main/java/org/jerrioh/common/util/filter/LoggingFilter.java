@@ -72,7 +72,7 @@ public class LoggingFilter extends CommonsRequestLoggingFilter {
 	private String getBeforeMessage(ContentCachingRequestWrapper request, String prefix, String suffix) {
 		StringBuilder msg = new StringBuilder();
 		msg.append(prefix);
-		msg.append("uri=").append(request.getRequestURI());
+		msg.append(request.getMethod()).append(" uri=").append(request.getRequestURI());
 
 		if (isIncludeQueryString()) {
 			String queryString = request.getQueryString();

@@ -1,6 +1,6 @@
 package org.jerrioh.diary.domain;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,7 +9,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "letter")
-public class Letter {
+public class AuthorLetter {
 	@Id
 	@Column(name = "letter_id")
 	private String letterId;
@@ -27,7 +27,7 @@ public class Letter {
 	private String content;
 
 	@Column(name = "writtenTime")
-	private Date writtenTime;
+	private Timestamp writtenTime;
 
 	public String getLetterId() {
 		return letterId;
@@ -69,11 +69,11 @@ public class Letter {
 		this.content = content;
 	}
 
-	public Date getWrittenTime() {
+	public Timestamp getWrittenTime() {
 		return writtenTime;
 	}
 
-	public void setWrittenTime(Date writtenTime) {
+	public void setWrittenTime(Timestamp writtenTime) {
 		this.writtenTime = writtenTime;
 	}
 }

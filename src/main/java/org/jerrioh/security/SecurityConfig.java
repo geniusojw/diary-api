@@ -27,7 +27,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	private static final String AUTHOR_AUTHENTICATION_URL_PATTERN = "/author/**";
 	
 	private static final String[] IGNORE_AUTHENTICATION_URI_PATTERNS = {
-			"/error", "/account/sign-up", "/account/sign-in", "/author/create",
+			"/error", "/account/sign-up", "/account/sign-in", "/author/start",
 			"/", "/favicon.ico", "/**/*.png", "/**/*.gif",
 			"/**/*.svg", "/**/*.jpg", "/**/*.html", "/**/*.css", "/**/*.js" };
     		
