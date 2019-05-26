@@ -2,8 +2,6 @@ package org.jerrioh.common.exception;
 
 import java.io.Serializable;
 
-import org.jerrioh.common.OdResponseType;
-
 public class OdException extends Exception {
 	private static final long serialVersionUID = 1L;
 	private final OdResponseType odResponseType;

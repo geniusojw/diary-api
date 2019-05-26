@@ -1,5 +1,6 @@
 package org.jerrioh.common.util;
 
+import org.jerrioh.common.Util;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class EncodingUtil extends Util {

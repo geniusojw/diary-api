@@ -6,9 +6,9 @@ import java.time.format.DateTimeFormatter;
 
 import javax.validation.Valid;
 
-import org.jerrioh.common.OdResponseType;
 import org.jerrioh.common.exception.OdAuthenticationException;
 import org.jerrioh.common.exception.OdException;
+import org.jerrioh.common.exception.OdResponseType;
 import org.jerrioh.common.util.OdLogger;
 import org.jerrioh.diary.controller.author.payload.AuthorDiaryRequest;
 import org.jerrioh.diary.controller.payload.ApiResponse;
@@ -37,6 +37,8 @@ public class AuthorDiaryController extends AbstractAuthorController {
 			throw new OdAuthenticationException();
 		}
 		
+		super.validateTimeZoneIdAndReturnDateTime(request.getTimeZoneId());
+		
 		AuthorDiary diary = authorDiaryRepository.findByAuthorIdAndDiaryDate(author.getAuthorId(), request.getDiaryDate());
 		if (diary != null) {
 			throw new OdException(OdResponseType.DIARY_CONFLICT);
@@ -49,6 +51,8 @@ public class AuthorDiaryController extends AbstractAuthorController {
 		diary.setContent(request.getContent());
 		diary.setLanguage(request.getLanguage());
 		diary.setCountry(request.getCountry());
+		diary.setTimeZoneId(request.getTimeZoneId());
+		
 		authorDiaryRepository.save(diary);
 		
 		return ApiResponse.make(OdResponseType.OK);

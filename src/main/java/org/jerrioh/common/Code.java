@@ -1,5 +1,4 @@
 package org.jerrioh.common;
 
-public class Code {
-
+public abstract class Code extends Static {
 }

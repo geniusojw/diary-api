@@ -1,12 +1,7 @@
 package org.jerrioh.diary.controller.author.payload;
 
-import javax.validation.constraints.NotNull;
-
 public class AuthorLetterResponse {
-	
-	@NotNull
 	private String letterId;
-	@NotNull
 	private String fromAuthorId;
 	private String title;
 	private String content;

@@ -17,17 +17,21 @@ public class AccountDiary {
 	public static class AccountDiaryPk implements Serializable {
 		private static final long serialVersionUID = 1L;
 
-		@Id @Column(name = "account_email")
+		@Id
+		@Column(name = "account_email")
 		private String accountEmail;
 
-		@Id @Column(name = "diary_date")
+		@Id
+		@Column(name = "diary_date")
 		private String diaryDate;
 	}
 
-	@Id @Column(name = "account_email")
+	@Id
+	@Column(name = "account_email")
 	private String accountEmail;
 
-	@Id @Column(name = "diary_date")
+	@Id
+	@Column(name = "diary_date")
 	private String diaryDate;
 
 	@Column(name = "title")
@@ -67,5 +71,5 @@ public class AccountDiary {
 	public void setContent(String content) {
 		this.content = content;
 	}
-	
+
 }

@@ -3,7 +3,7 @@ package org.jerrioh.diary.controller.etc;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jerrioh.common.OdResponseType;
+import org.jerrioh.common.exception.OdResponseType;
 import org.jerrioh.diary.controller.AbstractController;
 import org.jerrioh.diary.controller.etc.payload.ApplicationInformation;
 import org.jerrioh.diary.controller.payload.ApiResponse;

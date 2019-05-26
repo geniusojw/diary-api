@@ -1,14 +1,10 @@
 package org.jerrioh.diary.controller.author.payload;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
-public class AuthorDiaryRequest {
-	@NotNull
-	private String diaryDate;
-	private String title;
-	@Size(min = 0, max = 3000)
-	private String content;
+public class InviteTicketRequest {
+	private String diaryGroupName;
+	private String keyword;
 	@NotNull
 	private String language;
 	@NotNull
@@ -16,23 +12,17 @@ public class AuthorDiaryRequest {
 	@NotNull
 	private String timeZoneId;
 	
-	public String getDiaryDate() {
-		return diaryDate;
+	public String getDiaryGroupName() {
+		return diaryGroupName;
 	}
-	public void setDiaryDate(String diaryDate) {
-		this.diaryDate = diaryDate;
+	public void setDiaryGroupName(String diaryGroupName) {
+		this.diaryGroupName = diaryGroupName;
 	}
-	public String getTitle() {
-		return title;
+	public String getKeyword() {
+		return keyword;
 	}
-	public void setTitle(String title) {
-		this.title = title;
-	}
-	public String getContent() {
-		return content;
-	}
-	public void setContent(String content) {
-		this.content = content;
+	public void setKeyword(String keyword) {
+		this.keyword = keyword;
 	}
 	public String getLanguage() {
 		return language;

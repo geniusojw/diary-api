@@ -17,17 +17,21 @@ public class AuthorDiary {
 	public static class AuthorDiaryPk implements Serializable {
 		private static final long serialVersionUID = 1L;
 
-		@Id @Column(name = "author_id")
+		@Id
+		@Column(name = "author_id")
 		private String authorId;
 
-		@Id @Column(name = "diary_date")
+		@Id
+		@Column(name = "diary_date")
 		private String diaryDate;
 	}
 
-	@Id @Column(name = "author_id")
+	@Id
+	@Column(name = "author_id")
 	private String authorId;
 
-	@Id @Column(name = "diary_date")
+	@Id
+	@Column(name = "diary_date")
 	private String diaryDate;
 
 	@Column(name = "title")
@@ -41,6 +45,9 @@ public class AuthorDiary {
 
 	@Column(name = "country")
 	private String country;
+
+	@Column(name = "time_zone_id")
+	private String timeZoneId;
 
 	public String getAuthorId() {
 		return authorId;
@@ -88,5 +95,13 @@ public class AuthorDiary {
 
 	public void setCountry(String country) {
 		this.country = country;
+	}
+
+	public String getTimeZoneId() {
+		return timeZoneId;
+	}
+
+	public void setTimeZoneId(String timeZoneId) {
+		this.timeZoneId = timeZoneId;
 	}
 }

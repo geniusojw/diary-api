@@ -1,6 +1,6 @@
 package org.jerrioh.diary.controller.payload;
 
-import org.jerrioh.common.OdResponseType;
+import org.jerrioh.common.exception.OdResponseType;
 import org.springframework.http.ResponseEntity;
 
 public class ApiResponse<T> {

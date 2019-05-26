@@ -6,8 +6,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.jerrioh.common.OdResponseType;
 import org.jerrioh.common.exception.OdException;
+import org.jerrioh.common.exception.OdResponseType;
 import org.jerrioh.diary.controller.author.payload.AuthorLetterRequest;
 import org.jerrioh.diary.controller.author.payload.AuthorLetterResponse;
 import org.jerrioh.diary.controller.payload.ApiResponse;
@@ -30,6 +30,10 @@ public class AuthorLetterController extends AbstractAuthorController {
 		AuthorLetter letter = authorLetterRepository.findByLetterId(request.getLetterId());
 		if (letter != null) {
 			throw new OdException(OdResponseType.LETTER_CONFLICT);
+		}
+		Author toAuthor = authorRepository.findByAuthorId(request.getToAuthorId());
+		if (toAuthor == null) {
+			throw new OdException(OdResponseType.USER_NOT_FOUND);
 		}
 
 		letter = new AuthorLetter();

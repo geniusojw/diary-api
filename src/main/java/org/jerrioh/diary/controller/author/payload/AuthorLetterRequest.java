@@ -3,7 +3,6 @@ package org.jerrioh.diary.controller.author.payload;
 import javax.validation.constraints.NotNull;
 
 public class AuthorLetterRequest {
-	
 	@NotNull
 	private String letterId;
 	@NotNull

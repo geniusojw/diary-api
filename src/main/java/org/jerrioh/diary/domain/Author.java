@@ -20,6 +20,9 @@ public class Author {
 
 	@Column(name = "description")
 	private String description;
+	
+	@Column(name = "chocolates")
+	private int chocolates;
 
 	@Column(name = "is_deleted")
 	private boolean isDeleted;
@@ -54,6 +57,14 @@ public class Author {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public int getChocolates() {
+		return chocolates;
+	}
+
+	public void setChocolates(int chocolates) {
+		this.chocolates = chocolates;
 	}
 
 	public boolean isDeleted() {

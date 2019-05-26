@@ -5,6 +5,7 @@ public class AuthorResponse {
 	private String authorCode;
 	private String nickname;
 	private String description;
+	private int chocolates;
 
 	public String getAuthorId() {
 		return authorId;
@@ -29,5 +30,11 @@ public class AuthorResponse {
 	}
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	public int getChocolates() {
+		return chocolates;
+	}
+	public void setChocolates(int chocolates) {
+		this.chocolates = chocolates;
 	}
 }
