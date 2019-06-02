@@ -56,9 +56,13 @@ public class AuthorLetterController extends AbstractAuthorController {
 
 		List<AuthorLetterResponse> responses = new ArrayList<>();
 		for (AuthorLetter letter : letters) {
+			Author fromAuthor = authorRepository.findByAuthorId(letter.getFromAuthorId());
+			String fromAuthorNickname = fromAuthor != null ? fromAuthor.getNickname() : "unknown";
+			
 			AuthorLetterResponse response = new AuthorLetterResponse();
 			response.setLetterId(letter.getLetterId());
 			response.setFromAuthorId(letter.getFromAuthorId());
+			response.setFromAuthorNickname(fromAuthorNickname);
 			response.setTitle(letter.getTitle());
 			response.setContent(letter.getContent());
 			response.setWrittenTime(letter.getWrittenTime().getTime());

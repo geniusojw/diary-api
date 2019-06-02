@@ -3,6 +3,7 @@ package org.jerrioh.diary.controller.author.payload;
 public class AuthorLetterResponse {
 	private String letterId;
 	private String fromAuthorId;
+	private String fromAuthorNickname;
 	private String title;
 	private String content;
 	private long writtenTime;
@@ -18,6 +19,12 @@ public class AuthorLetterResponse {
 	}
 	public void setFromAuthorId(String fromAuthorId) {
 		this.fromAuthorId = fromAuthorId;
+	}
+	public String getFromAuthorNickname() {
+		return fromAuthorNickname;
+	}
+	public void setFromAuthorNickname(String fromAuthorNickname) {
+		this.fromAuthorNickname = fromAuthorNickname;
 	}
 	public String getTitle() {
 		return title;
