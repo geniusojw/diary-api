@@ -13,6 +13,15 @@ CREATE TABLE IF NOT EXISTS author
   CONSTRAINT author_pk PRIMARY KEY (author_id)
 );
 
+CREATE TABLE IF NOT EXISTS author_analyzed
+(
+  author_id VARCHAR(255) NOT NULL,
+  language VARCHAR(10) NOT NULL,
+  country VARCHAR(10) NOT NULL,
+  time_zone_id VARCHAR(30) NOT NULL,
+  CONSTRAINT author_analyzed_pk PRIMARY KEY (author_id)
+);
+
 CREATE TABLE IF NOT EXISTS author_diary
 (
   author_id VARCHAR(255) NOT NULL,
@@ -47,10 +56,12 @@ CREATE TABLE IF NOT EXISTS account_diary
 
 CREATE TABLE IF NOT EXISTS letter
 (
-  letter_id VARCHAR(300) NOT NULL COMMENT 'author_id + sequence',
+  letter_id VARCHAR(300) NOT NULL COMMENT 'from_author_id + written_time',
+  letter_type INT(11) NOT NULL COMMENT '0: normal, 1: invitation',
   from_author_id VARCHAR(255) NOT NULL,
+  from_author_nickname VARCHAR(50) NOT NULL COMMENT 'from author nickname at the time of writing',
   to_author_id VARCHAR(255) NOT NULL,
-  title VARCHAR(80) NULL,
+  to_author_nickname VARCHAR(50) NOT NULL COMMENT 'to author nickname at the time of writing',
   content VARCHAR(3000) NULL,
   written_time TIMESTAMP NULL DEFAULT now(),
   CONSTRAINT letter_pk PRIMARY KEY (letter_id)
@@ -75,6 +86,6 @@ CREATE TABLE IF NOT EXISTS diary_group_author
 (
   diary_group_id BIGINT NOT NULL,
   author_id VARCHAR(255) NOT NULL,
-  author_status INT(11) NOT NULL COMMENT '0: invite, 1: accept, 2: refuse, 3: out',
+  author_status INT(11) NOT NULL COMMENT '0: invite, 1: accept, 2: refuse',
   CONSTRAINT diary_group_author_pk PRIMARY KEY (diary_group_id, author_id)
 );

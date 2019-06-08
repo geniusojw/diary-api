@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jerrioh.common.util.OdLogger;
+import org.jerrioh.diary.controller.OdHeaders;
 import org.jerrioh.security.authentication.before.AuthorToken;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -23,8 +24,8 @@ public class AuthorAuthenticationFilter extends AbstractAuthenticationProcessing
 
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-		String authorId = request.getHeader("author-id");
-		String authorCode = request.getHeader("author-code");
+		String authorId = request.getHeader(OdHeaders.AUTHOR_ID);
+		String authorCode = request.getHeader(OdHeaders.AUTHOR_CODE);
 		return this.getAuthenticationManager().authenticate(new AuthorToken(authorId, authorCode));
 	}
 

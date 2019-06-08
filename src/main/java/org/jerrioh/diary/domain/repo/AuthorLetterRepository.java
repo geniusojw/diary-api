@@ -9,4 +9,6 @@ public interface AuthorLetterRepository extends JpaRepository<AuthorLetter, Stri
 
 	AuthorLetter findByLetterId(String letterId);
 	List<AuthorLetter> findByToAuthorId(String toAuthorId);
+	List<AuthorLetter> findByFromAuthorId(String fromAuthorId);
+	List<AuthorLetter> findByToAuthorIdOrFromAuthorId(String toAuthorId, String fromAuthorId);
 }

@@ -2,9 +2,11 @@ package org.jerrioh.diary.controller.author.payload;
 
 public class AuthorLetterResponse {
 	private String letterId;
+	private int letterType;
 	private String fromAuthorId;
 	private String fromAuthorNickname;
-	private String title;
+	private String toAuthorId;
+	private String toAuthorNickname;
 	private String content;
 	private long writtenTime;
 	
@@ -13,6 +15,12 @@ public class AuthorLetterResponse {
 	}
 	public void setLetterId(String letterId) {
 		this.letterId = letterId;
+	}
+	public int getLetterType() {
+		return letterType;
+	}
+	public void setLetterType(int letterType) {
+		this.letterType = letterType;
 	}
 	public String getFromAuthorId() {
 		return fromAuthorId;
@@ -26,11 +34,17 @@ public class AuthorLetterResponse {
 	public void setFromAuthorNickname(String fromAuthorNickname) {
 		this.fromAuthorNickname = fromAuthorNickname;
 	}
-	public String getTitle() {
-		return title;
+	public String getToAuthorId() {
+		return toAuthorId;
 	}
-	public void setTitle(String title) {
-		this.title = title;
+	public void setToAuthorId(String toAuthorId) {
+		this.toAuthorId = toAuthorId;
+	}
+	public String getToAuthorNickname() {
+		return toAuthorNickname;
+	}
+	public void setToAuthorNickname(String toAuthorNickname) {
+		this.toAuthorNickname = toAuthorNickname;
 	}
 	public String getContent() {
 		return content;

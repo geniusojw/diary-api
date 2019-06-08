@@ -8,6 +8,7 @@ import org.jerrioh.common.exception.OdResponseType;
 import org.jerrioh.common.util.OdLogger;
 import org.jerrioh.diary.controller.AbstractController;
 import org.jerrioh.diary.domain.Author;
+import org.jerrioh.diary.domain.repo.AuthorAnalyzedRepository;
 import org.jerrioh.diary.domain.repo.AuthorDiaryRepository;
 import org.jerrioh.diary.domain.repo.AuthorLetterRepository;
 import org.jerrioh.diary.domain.repo.AuthorRepository;
@@ -22,6 +23,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class AbstractAuthorController extends AbstractController {
 	@Autowired
 	protected AuthorRepository authorRepository;
+	@Autowired
+	protected AuthorAnalyzedRepository authorAnalyzedRepository;
 	@Autowired
 	protected AuthorDiaryRepository authorDiaryRepository;
 	@Autowired
@@ -39,7 +42,7 @@ public class AbstractAuthorController extends AbstractController {
 		throw new OdAuthenticationException();		
 	}
 
-	protected DateTimeZone validateTimeZoneIdAndReturnDateTime(String timeZoneId) throws OdException {
+	protected DateTimeZone getDateTimeZone(String timeZoneId) throws OdException {
 		try {
 			return DateTimeZone.forID(timeZoneId);
 		} catch (IllegalArgumentException e) {

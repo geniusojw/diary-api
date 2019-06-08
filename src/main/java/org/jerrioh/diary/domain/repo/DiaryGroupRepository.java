@@ -7,19 +7,19 @@ import org.springframework.data.repository.query.Param;
 
 public interface DiaryGroupRepository extends JpaRepository<DiaryGroup, Long> {
 	
-	@Query(value = "SELECT dg.* FROM diary_group dg, diary_group_author dga "
-			+ "WHERE dg.diary_group_id = dga.diary_group_id "
-			+ "AND dg.end_time > now() "
-			+ "AND dga.author_id = :authorId", nativeQuery = true)
+	@Query(value = "SELECT DG.* FROM DIARY_GROUP DG, DIARY_GROUP_AUTHOR DGA "
+			+ "WHERE DG.DIARY_GROUP_ID = DGA.DIARY_GROUP_ID "
+			+ "AND DG.END_TIME > NOW() "
+			+ "AND DGA.AUTHOR_ID = :authorId", nativeQuery = true)
 	DiaryGroup findByAuthorId(@Param("authorId") String authorId);
 	
-	@Query(value = "SELECT dg.* FROM diary_group dg "
-			+ "WHERE dg.start_time > now() "
-			+ "AND dg.language = :language "
-			+ "AND dg.country = :country "
-			+ "AND dg.time_zone_id = :timeZoneId "
-			+ "AND dg.max_author_count > (SELECT COUNT(1) FROM diary_group_author dga WHERE dga.diary_group_id = dg.diary_group_id AND dga.author_status IN (0, 1)) "
-			+ "ORDER BY dg.start_time DESC "
+	@Query(value = "SELECT DG.* FROM DIARY_GROUP DG "
+			+ "WHERE DG.START_TIME > NOW() "
+			+ "AND DG.LANGUAGE = :language "
+			+ "AND DG.COUNTRY = :country "
+			+ "AND DG.TIME_ZONE_ID = :timeZoneId "
+			+ "AND DG.MAX_AUTHOR_COUNT > (SELECT COUNT(1) FROM DIARY_GROUP_AUTHOR DGA WHERE DGA.DIARY_GROUP_ID = DG.DIARY_GROUP_ID AND DGA.AUTHOR_STATUS IN (0, 1)) "
+			+ "ORDER BY DG.START_TIME DESC "
 			+ "LIMIT 1", nativeQuery = true)
 	DiaryGroup findInviteDiaryGroup(@Param("language") String language, @Param("country") String country, @Param("timeZoneId") String timeZoneId);
 }

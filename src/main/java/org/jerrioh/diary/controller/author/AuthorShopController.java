@@ -93,7 +93,7 @@ public class AuthorShopController extends AbstractAuthorController {
 
 	private ResponseEntity<ApiResponse<DiaryGroupResponse>> invite(InviteTicketRequest request, int numberOfChocolatesRequired, int maxAuthorCount) throws OdException {
 		Author author = super.getAuthor();
-		DateTimeZone dateTimeZone = super.validateTimeZoneIdAndReturnDateTime(request.getTimeZoneId());
+		DateTimeZone dateTimeZone = super.getDateTimeZone(request.getTimeZoneId());
 		this.throwExceptionIfHasNotEnoughChocolates(author, numberOfChocolatesRequired);
 		DiaryGroup diaryGroup = diaryGroupRepository.findByAuthorId(author.getAuthorId());
 		if (diaryGroup != null) {

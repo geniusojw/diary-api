@@ -5,11 +5,11 @@ import javax.validation.constraints.NotNull;
 public class AuthorLetterRequest {
 	@NotNull
 	private String letterId;
-	@NotNull
 	private String toAuthorId;
-	private String title;
+	private String toAuthorNickname;
+	@NotNull
 	private String content;
-
+	
 	public String getLetterId() {
 		return letterId;
 	}
@@ -22,11 +22,11 @@ public class AuthorLetterRequest {
 	public void setToAuthorId(String toAuthorId) {
 		this.toAuthorId = toAuthorId;
 	}
-	public String getTitle() {
-		return title;
+	public String getToAuthorNickname() {
+		return toAuthorNickname;
 	}
-	public void setTitle(String title) {
-		this.title = title;
+	public void setToAuthorNickname(String toAuthorNickname) {
+		this.toAuthorNickname = toAuthorNickname;
 	}
 	public String getContent() {
 		return content;

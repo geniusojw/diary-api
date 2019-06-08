@@ -7,21 +7,34 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.jerrioh.common.Code;
+
 @Entity
 @Table(name = "letter")
 public class AuthorLetter {
+	public static class LetterType extends Code {
+		public static final int NORMAL = 0;
+		public static final int INVITATION = 1;
+	}
+	
 	@Id
 	@Column(name = "letter_id")
 	private String letterId;
 	
+	@Column(name = "letter_type")
+	private int letterType;
+	
 	@Column(name = "from_author_id")
 	private String fromAuthorId;
+	
+	@Column(name = "from_author_nickname")
+	private String fromAuthorNickname;
 
 	@Column(name = "to_author_id")
 	private String toAuthorId;
 
-	@Column(name = "title")
-	private String title;
+	@Column(name = "to_author_nickname")
+	private String toAuthorNickname;
 
 	@Column(name = "content")
 	private String content;
@@ -37,12 +50,28 @@ public class AuthorLetter {
 		this.letterId = letterId;
 	}
 
+	public int getLetterType() {
+		return letterType;
+	}
+
+	public void setLetterType(int letterType) {
+		this.letterType = letterType;
+	}
+
 	public String getFromAuthorId() {
 		return fromAuthorId;
 	}
 
 	public void setFromAuthorId(String fromAuthorId) {
 		this.fromAuthorId = fromAuthorId;
+	}
+
+	public String getFromAuthorNickname() {
+		return fromAuthorNickname;
+	}
+
+	public void setFromAuthorNickname(String fromAuthorNickname) {
+		this.fromAuthorNickname = fromAuthorNickname;
 	}
 
 	public String getToAuthorId() {
@@ -53,12 +82,12 @@ public class AuthorLetter {
 		this.toAuthorId = toAuthorId;
 	}
 
-	public String getTitle() {
-		return title;
+	public String getToAuthorNickname() {
+		return toAuthorNickname;
 	}
 
-	public void setTitle(String title) {
-		this.title = title;
+	public void setToAuthorNickname(String toAuthorNickname) {
+		this.toAuthorNickname = toAuthorNickname;
 	}
 
 	public String getContent() {

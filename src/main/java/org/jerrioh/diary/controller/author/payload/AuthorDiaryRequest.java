@@ -9,12 +9,6 @@ public class AuthorDiaryRequest {
 	private String title;
 	@Size(min = 0, max = 3000)
 	private String content;
-	@NotNull
-	private String language;
-	@NotNull
-	private String country;
-	@NotNull
-	private String timeZoneId;
 	
 	public String getDiaryDate() {
 		return diaryDate;
@@ -33,23 +27,5 @@ public class AuthorDiaryRequest {
 	}
 	public void setContent(String content) {
 		this.content = content;
-	}
-	public String getLanguage() {
-		return language;
-	}
-	public void setLanguage(String language) {
-		this.language = language;
-	}
-	public String getCountry() {
-		return country;
-	}
-	public void setCountry(String country) {
-		this.country = country;
-	}
-	public String getTimeZoneId() {
-		return timeZoneId;
-	}
-	public void setTimeZoneId(String timeZoneId) {
-		this.timeZoneId = timeZoneId;
 	}
 }
