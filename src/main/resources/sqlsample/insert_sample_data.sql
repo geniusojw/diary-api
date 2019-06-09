@@ -2,7 +2,13 @@ INSERT INTO author (author_id, author_code, nickname, description, chocolates) V
 INSERT INTO author (author_id, author_code, nickname, description, chocolates) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46811', 'RcDHKCZRhQXLe3Cj', 'genius OJW', 'He is obviously a genius.', 0);
 INSERT INTO author (author_id, author_code, nickname, description, chocolates) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46812', 'RcDHKCZRhQXLe3Cj', 'Super Man', 'Super Man~~~', 30);
 
+INSERT INTO author_nickname_history (author_id, sequence, nickname) VALUES ('475a45d5-d139-4e3a-9828-e00e296c9040', 1, 'Administrator');
+INSERT INTO author_nickname_history (author_id, sequence, nickname) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46811', 1, 'genius OJW');
+INSERT INTO author_nickname_history (author_id, sequence, nickname) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46812', 1, 'Super Man');
 
+INSERT INTO author_description_history (author_id, sequence, description) VALUES ('475a45d5-d139-4e3a-9828-e00e296c9040', 1, 'Administrator OJW');
+INSERT INTO author_description_history (author_id, sequence, description) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46811', 1, 'He is obviously a genius.');
+INSERT INTO author_description_history (author_id, sequence, description) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46812', 1, 'Super Man~~~');
 
 INSERT INTO author_diary (author_id, diary_date, title, content, language, country, time_zone_id) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46811', '20190502', '', '다른 복수개의 단말에서 동시에 일기를 쓴다면? 먼저 업로드 된 쪽이 임자인가? 12시에 업로드가 몰리는 현상은 없을까?', 'kor', 'KOR', 'Asia/Seoul');
 INSERT INTO author_diary (author_id, diary_date, title, content, language, country, time_zone_id) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46811', '20190504', '일기', '테스트 일기', 'kor', 'KOR', 'Asia/Seoul');

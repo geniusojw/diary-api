@@ -13,6 +13,35 @@ CREATE TABLE IF NOT EXISTS author
   CONSTRAINT author_pk PRIMARY KEY (author_id)
 );
 
+CREATE TABLE IF NOT EXISTS author_nickname_history
+(
+  author_id VARCHAR(255) NOT NULL,
+  sequence BIGINT NOT NULL,
+  nickname VARCHAR(50) NOT NULL,
+  creation_time TIMESTAMP NOT NULL DEFAULT now(),
+  CONSTRAINT author_nickname_history_pk PRIMARY KEY (author_id, sequence)
+);
+
+CREATE TABLE IF NOT EXISTS author_description_history
+(
+  author_id VARCHAR(255) NOT NULL,
+  sequence BIGINT NOT NULL,
+  description VARCHAR(50) NOT NULL,
+  creation_time TIMESTAMP NOT NULL DEFAULT now(),
+  CONSTRAINT author_description_history_pk PRIMARY KEY (author_id, sequence)
+);
+
+CREATE TABLE IF NOT EXISTS author_chocolates_history
+(
+  author_id VARCHAR(255) NOT NULL,
+  sequence BIGINT NOT NULL,
+  chocolates_changed INT(11) NOT NULL,
+  chocolates_result INT(11) NOT NULL,
+  details VARCHAR(50) NOT NULL,
+  creation_time TIMESTAMP NOT NULL DEFAULT now(),
+  CONSTRAINT author_chocolates_history_pk PRIMARY KEY (author_id, sequence)
+);
+
 CREATE TABLE IF NOT EXISTS author_analyzed
 (
   author_id VARCHAR(255) NOT NULL,

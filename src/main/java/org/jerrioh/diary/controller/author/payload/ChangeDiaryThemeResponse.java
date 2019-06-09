@@ -1,0 +1,33 @@
+package org.jerrioh.diary.controller.author.payload;
+
+public class ChangeDiaryThemeResponse {
+	private String themeName;
+	private String pattern1;
+	private String pattern2;
+	private String pattern3;
+	
+	public String getThemeName() {
+		return themeName;
+	}
+	public void setThemeName(String themeName) {
+		this.themeName = themeName;
+	}
+	public String getPattern1() {
+		return pattern1;
+	}
+	public void setPattern1(String pattern1) {
+		this.pattern1 = pattern1;
+	}
+	public String getPattern2() {
+		return pattern2;
+	}
+	public void setPattern2(String pattern2) {
+		this.pattern2 = pattern2;
+	}
+	public String getPattern3() {
+		return pattern3;
+	}
+	public void setPattern3(String pattern3) {
+		this.pattern3 = pattern3;
+	}
+}

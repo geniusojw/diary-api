@@ -21,6 +21,8 @@ public enum OdResponseType {
 	LETTER_CONFLICT(409, 3, "Letter Already Exsits"),
 	DIARY_GROUP_CONFLICT(409, 4, "Diary Group Already Exsits"),
 	
+	PRECONDITION_FAILED(412, 0, "Precondition Failed"),
+	
 	INTERNAL_SERVER_ERROR(500, 0, "Internal Server Error");
 	
 	private int statusCode;

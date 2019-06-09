@@ -1,4 +1,7 @@
 DROP TABLE IF EXISTS author;
+DROP TABLE IF EXISTS author_nickname_history;
+DROP TABLE IF EXISTS author_description_history;
+DROP TABLE IF EXISTS author_chocolates_history;
 DROP TABLE IF EXISTS author_analyzed;
 DROP TABLE IF EXISTS author_diary;
 DROP TABLE IF EXISTS account;

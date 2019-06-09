@@ -9,6 +9,7 @@ import org.jerrioh.diary.controller.author.payload.AuthorResponse;
 import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Author;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/author")
 public class AuthorController extends AbstractAuthorController {
 	
+	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/start")
 	public ResponseEntity<ApiResponse<AuthorResponse>> create(@RequestBody @Valid AuthorRequest request) throws OdException {
 		Author author = authorRepository.findByAuthorId(request.getAuthorId());
@@ -34,6 +36,10 @@ public class AuthorController extends AbstractAuthorController {
 		author.setDescription(generateDescription());
 		author.setChocolates(0);
 		authorRepository.save(author);
+
+		authorRepository.insertNickNameHistory(author.getAuthorId());
+		authorRepository.insertDescriptionHistory(author.getAuthorId());
+		authorRepository.insertChocolateHistory(author.getAuthorId(), 0, "start");
 		
 		AuthorResponse response = authorToResponse(author);
 		return ApiResponse.make(OdResponseType.OK, response);

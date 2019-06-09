@@ -15,8 +15,29 @@ public interface AuthorRepository extends JpaRepository<Author, String> {
 			+ "AND AA.LANGUAGE = :language "
 			+ "AND AA.COUNTRY = :country "
 			+ "AND AA.TIME_ZONE_ID = :timeZoneId "
-			+ "AND (SELECT COUNT(1) FROM AUTHOR_DIARY AD WHERE A.AUTHOR_ID = AD.AUTHOR_ID AND AD.DIARY_DATE > NOW() - INTERVAL 40 DAY) >= 2 "
+			+ "AND (SELECT COUNT(1) FROM AUTHOR_DIARY AD WHERE A.AUTHOR_ID = AD.AUTHOR_ID AND AD.DIARY_DATE > NOW() - INTERVAL 10 DAY) >= 2 "
 			+ "ORDER BY RAND() "
 			+ "LIMIT 1", nativeQuery = true)
 	Author findRandomAuthor(@Param("excludeAuthorId") String excludeAuthorId, @Param("language") String language, @Param("country") String country, @Param("timeZoneId") String timeZoneId);
+
+	@Query(value = "SELECT NOW() > CREATION_TIME + INTERVAL :hours HOUR FROM AUTHOR_DESCRIPTION_HISTORY WHERE AUTHOR_ID = :authorId ORDER BY SEQUENCE DESC LIMIT 1;", nativeQuery = true)
+	int descriptionChangable(@Param("authorId") String authorId, @Param("hours") int hours);
+	
+	@Query(value = "SELECT NOW() > CREATION_TIME + INTERVAL :hours HOUR FROM AUTHOR_NICKNAME_HISTORY WHERE AUTHOR_ID = :authorId ORDER BY SEQUENCE DESC LIMIT 1;", nativeQuery = true)
+	int nickNameChangable(@Param("authorId") String authorId, @Param("hours") int hours);
+	
+	@Query(value = "INSERT INTO AUTHOR_DESCRIPTION_HISTORY (AUTHOR_ID, SEQUENCE, DESCRIPTION) "
+			+ "SELECT AUTHOR_ID, (SELECT IFNULL(MAX(SEQUENCE), 0) + 1 FROM AUTHOR_DESCRIPTION_HISTORY WHERE AUTHOR_ID = :authorId), DESCRIPTION "
+			+ "FROM AUTHOR WHERE AUTHOR_ID = :authorId", nativeQuery = true)
+	void insertDescriptionHistory(@Param("authorId") String authorId);
+	
+	@Query(value = "INSERT INTO AUTHOR_NICKNAME_HISTORY (AUTHOR_ID, SEQUENCE, NICKNAME) "
+			+ "SELECT AUTHOR_ID, (SELECT IFNULL(MAX(SEQUENCE), 0) + 1 FROM AUTHOR_NICKNAME_HISTORY WHERE AUTHOR_ID = :authorId), NICKNAME "
+			+ "FROM AUTHOR WHERE AUTHOR_ID = :authorId", nativeQuery = true)
+	void insertNickNameHistory(@Param("authorId") String authorId);
+	
+	@Query(value = "INSERT INTO AUTHOR_CHOCOLATES_HISTORY (AUTHOR_ID, SEQUENCE, CHOCOLATES_CHANGED, CHOCOLATES_RESULT, DETAILS) "
+			+ "SELECT AUTHOR_ID, (SELECT IFNULL(MAX(SEQUENCE), 0) + 1 FROM AUTHOR_CHOCOLATES_HISTORY WHERE AUTHOR_ID = :authorId), :chocolatesChanged, CHOCOLATES, :details "
+			+ "FROM AUTHOR WHERE AUTHOR_ID = :authorId", nativeQuery = true)
+	void insertChocolateHistory(@Param("authorId") String authorId, @Param("chocolatesChanged") int chocolatesChanged, @Param("details") String details);
 }

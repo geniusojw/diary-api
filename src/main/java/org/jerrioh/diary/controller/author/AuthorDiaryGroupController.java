@@ -61,7 +61,7 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 	}
 	
 	@PostMapping("/be-invited")
-	public ResponseEntity<ApiResponse<DiaryGroupResponse>> beInvited() throws OdException {
+	public ResponseEntity<ApiResponse<Object>> beInvited() throws OdException {
 		Author author = super.getAuthor();
 
 		// 이미 포함된 그룹이 있다.
@@ -71,7 +71,7 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 		}
 		
 		// 7일간 2개이상의 일기를 작성했어야 초대될 수 있다.
-		List<AuthorDiary> authorDiaries = authorDiaryRepository.findByAuthorIdRecent7Days(author.getAuthorId());
+		List<AuthorDiary> authorDiaries = authorDiaryRepository.findByAuthorDiaryRecent10Days(author.getAuthorId());
 		if (authorDiaries.size() < NUMBER_OF_DIARIES_MINIMUM_REQUIREMENT_2) {
 			OdLogger.debug("The recent number of diaries is too small. authorDiaries.size() = {}", authorDiaries.size());
 			throw new OdException(OdResponseType.DIARY_GROUP_NOT_FOUND);
@@ -93,18 +93,7 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 		
 		this.inviteAndSendInviteLetter(author, diaryGroup);
 
-		DiaryGroupResponse response = new DiaryGroupResponse();
-		response.setDiaryGroupId(diaryGroup.getDiaryGroupId());
-		response.setDiaryGroupName(diaryGroup.getDiaryGroupName());
-		response.setKeyword(diaryGroup.getKeyword());
-		response.setMaxAuthorCount(diaryGroup.getMaxAuthorCount());
-		response.setLanguage(diaryGroup.getLanguage());
-		response.setCountry(diaryGroup.getCountry());
-		response.setTimeZoneId(diaryGroup.getTimeZoneId());
-		response.setStartTime(diaryGroup.getStartTime().getTime());
-		response.setEndTime(diaryGroup.getEndTime().getTime());
-		
-		return ApiResponse.make(OdResponseType.OK, response);
+		return ApiResponse.make(OdResponseType.OK);
 	}
 
 	private void inviteAndSendInviteLetter(Author author, DiaryGroup diaryGroup) {

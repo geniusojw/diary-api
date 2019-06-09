@@ -13,6 +13,6 @@ public interface AuthorDiaryRepository extends JpaRepository<AuthorDiary, Author
 	AuthorDiary findByAuthorIdAndDiaryDate(String authorId, String diaryDate);
 	List<AuthorDiary> findByAuthorIdOrderByDiaryDateDesc(String authorId);
 	
-	@Query(value = "SELECT * FROM AUTHOR_DIARY WHERE AUTHOR_ID = :authorId AND DIARY_DATE > NOW() - INTERVAL 7 DAY", nativeQuery = true)
-	List<AuthorDiary> findByAuthorIdRecent7Days(@Param("authorId") String authorId);
+	@Query(value = "SELECT * FROM AUTHOR_DIARY WHERE AUTHOR_ID = :authorId AND DIARY_DATE > NOW() - INTERVAL 10 DAY", nativeQuery = true)
+	List<AuthorDiary> findByAuthorDiaryRecent10Days(@Param("authorId") String authorId);
 }
