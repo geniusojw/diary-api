@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-public class AbstractAccountController extends AbstractController {
+public abstract class AbstractAccountController extends AbstractController {
 	
 	@Autowired
 	protected AccountRepository accountRepository;

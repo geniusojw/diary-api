@@ -1,8 +1,13 @@
 package org.jerrioh.diary.controller.author;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Timestamp;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import javax.validation.Valid;
@@ -24,6 +29,7 @@ import org.jerrioh.diary.domain.DiaryGroupAuthor;
 import org.jerrioh.diary.domain.DiaryGroupAuthor.AuthorStatus;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/author/store")
 public class AuthorStoreController extends AbstractAuthorController {
 	
+	private static final Random RANDOM = new Random();
 	private static final int DESCRIPTION_AND_NICKNAME_CHANGE_HOURS = 1;
 	
 	private static final Map<String, Integer> PRICE_MAP = new HashMap<>();
@@ -144,14 +151,33 @@ public class AuthorStoreController extends AbstractAuthorController {
 		this.throwExceptionIfHasNotEnoughChocolates(author, ItemPrice.CHANGE_DIARY_THEME.price);
 		
 		// select random theme
+		String themeName;
+		String[] patterns = new String[4];
+		try {
+			ClassPathResource classPathResource = new ClassPathResource("diary-theme");
+			File[] themeDirectories = classPathResource.getFile().listFiles();
+			int randomIndex = RANDOM.nextInt(themeDirectories.length);
+			File randomThemeDirectory = themeDirectories[randomIndex];
+			
+			themeName = randomThemeDirectory.getName();
+			for (int index = 0; index < 4; index++) {
+				File imageFile = new File(randomThemeDirectory.getPath() + String.format("\\pattern%d.png", index));
+				byte[] bytes = Files.readAllBytes(imageFile.toPath());
+				patterns[index] = new String(Base64.getEncoder().encode(bytes));
+			}
+			
+		} catch (IOException e) {
+			throw new OdException(OdResponseType.FILE_READ_ERROR);
+		}
 		
 		this.payChocolates(author, ItemPrice.CHANGE_DIARY_THEME.price, ItemPrice.CHANGE_DIARY_THEME.itemId);
 
 		ChangeDiaryThemeResponse response = new ChangeDiaryThemeResponse();
-		response.setThemeName("test theme - 1");
-		response.setPattern1("pattern1");
-		response.setPattern2("pattern2");
-		response.setPattern3("pattern3");
+		response.setThemeName(themeName);
+		response.setPattern0(patterns[0]);
+		response.setPattern1(patterns[1]);
+		response.setPattern2(patterns[2]);
+		response.setPattern3(patterns[3]);
 		return ApiResponse.make(OdResponseType.OK, response);
 	}
 

@@ -10,10 +10,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
 import org.jerrioh.diary.controller.OdHeaders;
-import org.jerrioh.diary.controller.author.author.requestparam.GetLettersParameter;
-import org.jerrioh.diary.controller.author.author.requestparam.GetLettersParameter.Range;
 import org.jerrioh.diary.controller.author.payload.AuthorLetterRequest;
 import org.jerrioh.diary.controller.author.payload.AuthorLetterResponse;
+import org.jerrioh.diary.controller.author.requestparam.GetLettersParameter;
+import org.jerrioh.diary.controller.author.requestparam.GetLettersParameter.Range;
 import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Author;
 import org.jerrioh.diary.domain.AuthorLetter;
@@ -43,9 +43,11 @@ public class AuthorLetterController extends AbstractAuthorController {
 		
 		Author toAuthor;
 		if (StringUtils.isNotEmpty(request.getToAuthorId())) {
+			// 일반 편지 발송. 발신인이 있는 경우
 			toAuthor = authorRepository.findByAuthorId(request.getToAuthorId());
 		} else {
-			// 랜덤 편지 발송. 같은 언어, 국가, 타임존이 확인된 사람. 7일동안 2번이상 일기를 쓴 사람에게.
+			// 랜덤 편지 발송. 발신인이 없는 경우.
+			// 같은 언어, 국가, 타임존이 확인된 사람. 7일동안 2번이상 일기를 쓴 사람에게.
 			super.getDateTimeZone(timeZoneId);
 			toAuthor = authorRepository.findRandomAuthor(author.getAuthorId(), language, country, timeZoneId);
 		}

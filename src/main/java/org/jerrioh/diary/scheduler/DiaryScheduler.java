@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jerrioh.common.util.OdLogger;
-import org.jerrioh.diary.controller.author.AbstractAuthorController;
 import org.jerrioh.diary.domain.Author;
 import org.jerrioh.diary.domain.AuthorAnalyzed;
 import org.jerrioh.diary.domain.AuthorDiary;
@@ -16,9 +15,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AuthorScheduler extends AbstractAuthorController {
-
-	@Scheduled(cron = "0 * * * * *")
+public class DiaryScheduler extends AbstractScheduler {
+	
+	@Scheduled(cron = EVERY_0_AND_12_HOUR)
 	public void updateAuthorAnalyzed() {
 		BiFunction<String, Integer, Integer> increaseCountFunction = (key, count) -> {
 			return count == null ? 1 : count + 1;

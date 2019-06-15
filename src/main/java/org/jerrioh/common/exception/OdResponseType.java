@@ -23,7 +23,8 @@ public enum OdResponseType {
 	
 	PRECONDITION_FAILED(412, 0, "Precondition Failed"),
 	
-	INTERNAL_SERVER_ERROR(500, 0, "Internal Server Error");
+	INTERNAL_SERVER_ERROR(500, 0, "Internal Server Error"),
+	FILE_READ_ERROR(500, 1, "File Read Error");
 	
 	private int statusCode;
 	private int detailCode;

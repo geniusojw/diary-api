@@ -8,15 +8,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Collection;
 import java.util.Collections;
 
+import org.jerrioh.diary.controller.OdHeaders;
 import org.jerrioh.diary.controller.account.AccountDiaryController;
 import org.jerrioh.diary.domain.Account;
 import org.jerrioh.diary.domain.AccountDiary;
 import org.jerrioh.diary.domain.repo.AccountDiaryRepository;
+import org.jerrioh.diary.domain.repo.AccountRepository;
 import org.jerrioh.security.authentication.after.CompleteAccountToken;
 import org.jerrioh.security.authentication.before.AccountJwtToken;
-import org.jerrioh.security.authentication.before.AccountSigninToken;
 import org.jerrioh.security.provider.AccountJwtAuthenticationProvider;
 import org.jerrioh.security.provider.AccountSigninAuthenticationProvider;
+import org.jerrioh.security.provider.AuthorAuthenticationProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,25 +26,35 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(AccountDiaryController.class)
-public class DiaryControllerTest {
+public class AccountDiaryControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
+    
+	@MockBean
+    private AccountSigninAuthenticationProvider accountSigninAuthenticationProvider;
+    
+	@MockBean
+    private AuthorAuthenticationProvider authorAuthenticationProvider;
 	
 	@MockBean
-	private AccountJwtAuthenticationProvider jwtAuthenticationProvider;
+    private AccountJwtAuthenticationProvider accountJwtAuthenticationProvider;
 	
 	@MockBean
-	private AccountSigninAuthenticationProvider signinAuthenticationProvider;
-
+	private AccountRepository accountRepository;
+	
 	@MockBean
-	private AccountDiaryRepository diaryRepository;
+	private AccountDiaryRepository accountDiaryRepository;
+	
+	@MockBean
+	private AuthenticationManager authenticationManager;
 	
 	@Before
 	public void setup() {
@@ -51,13 +63,15 @@ public class DiaryControllerTest {
 		account.setPasswordEnc("");
 		Collection<? extends GrantedAuthority> authorities = Collections.emptyList();
 		
-		when(jwtAuthenticationProvider.authenticate(Mockito.any(AccountJwtToken.class))).thenReturn(new CompleteAccountToken(account, authorities));
-		when(jwtAuthenticationProvider.authenticate(Mockito.any(AccountSigninToken.class))).thenReturn(new CompleteAccountToken(account, authorities));
+		when(authenticationManager.authenticate(Mockito.any(AccountJwtToken.class))).thenReturn(new CompleteAccountToken(account, authorities));
+		
+//		when(accountJwtAuthenticationProvider.authenticate(Mockito.any(AccountJwtToken.class))).thenReturn(new CompleteAccountToken(account, authorities));
+//		when(accountSigninAuthenticationProvider.authenticate(Mockito.any(AccountSigninToken.class))).thenReturn(new CompleteAccountToken(account, authorities));
 	}
 
 	@Test
 	public void read() throws Exception {
-		String diaryDate = "20190430";
+		String diaryDate = "20194030";
 		String accountEmail = "jerrioh@gmail.com";
 
 		AccountDiary diary = new AccountDiary();
@@ -66,9 +80,13 @@ public class DiaryControllerTest {
 		diary.setTitle("Genius OJW");
 		diary.setContent("역시는 역시 역시군");
 		
-		when(diaryRepository.findByAccountEmailAndDiaryDate(accountEmail, diaryDate)).thenReturn(diary);
+		when(accountDiaryRepository.findByAccountEmailAndDiaryDate(accountEmail, diaryDate)).thenReturn(diary);
 		
-		this.mockMvc.perform(get("/diary/20194030").header("token", ""))
+//		String jwt = "eyJhbGciOiJIUzUxMiJ9"
+//				+ ".eyJzdWIiOiJqZXJyaW9oQGdtYWlsLmNvbSIsImlhdCI6MTU2MDE4MzAxNywiZXhwIjoxNjQ2NTgzMDE2fQ"
+//				+ ".fxyZDrUyVCJENZfWYzUQjBzYdaERIqYSZIjufPvQjNvePF_7O6RbhSp2khi1clDDlx5S5DUpQCPcUvwF1dguDw";
+		
+		this.mockMvc.perform(get("/account/diaries/20194030").header(OdHeaders.TOKEN, ""))
 					.andDo(print())
 					.andExpect(status().isOk());
 	}

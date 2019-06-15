@@ -1,4 +1,4 @@
-package org.jerrioh.diary.controller.author.author.requestparam;
+package org.jerrioh.diary.controller.author.requestparam;
 
 import javax.validation.constraints.Pattern;
 
@@ -13,7 +13,7 @@ public class GetLettersParameter {
 	
 	@Pattern(regexp = "in|out|all")
 	private String range = Range.ALL;
-	private int letterType = LetterType.NORMAL;
+	private int type = LetterType.NORMAL;
 
 	public String getRange() {
 		return range;
@@ -23,11 +23,11 @@ public class GetLettersParameter {
 		this.range = range;
 	}
 
-	public int getLetterType() {
-		return letterType;
+	public int getType() {
+		return type;
 	}
 
-	public void setLetterType(int letterType) {
-		this.letterType = letterType;
+	public void setType(int type) {
+		this.type = type;
 	}
 }

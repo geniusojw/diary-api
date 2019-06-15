@@ -2,6 +2,7 @@ package org.jerrioh.diary.controller.author.payload;
 
 public class ChangeDiaryThemeResponse {
 	private String themeName;
+	private String pattern0;
 	private String pattern1;
 	private String pattern2;
 	private String pattern3;
@@ -11,6 +12,12 @@ public class ChangeDiaryThemeResponse {
 	}
 	public void setThemeName(String themeName) {
 		this.themeName = themeName;
+	}
+	public String getPattern0() {
+		return pattern0;
+	}
+	public void setPattern0(String pattern0) {
+		this.pattern0 = pattern0;
 	}
 	public String getPattern1() {
 		return pattern1;

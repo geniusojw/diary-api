@@ -1,5 +1,8 @@
 spring.profiles.active: local
 
+#https://github.com/spring-cloud/spring-cloud-config/issues/1142
+spring.main.allow-bean-definition-overriding: true
+
 spring.datasource:
     username: root
     password: "!maria12"
@@ -14,6 +17,12 @@ server.port: 80
 jwt:
    jwtscret: NuP7j3DwRfbImWt59Xp6g3J7r4ahOOVd
    jwt-expiration-in-ms: 600000
+    
+apis:
+   openweathermap:
+      name: openweathermap
+      url: http://api.openweathermap.org
+      auth: 1c1e322b6dcea390db2d9e8422d479dc
 
 logging.level:
     org.jerrioh: DEBUG
