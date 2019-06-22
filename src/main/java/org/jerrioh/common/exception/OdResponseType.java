@@ -23,6 +23,8 @@ public enum OdResponseType {
 	
 	PRECONDITION_FAILED(412, 0, "Precondition Failed"),
 	
+	TOO_MANY_REQUESTS(429, 0, "Too Many Requests"),
+	
 	INTERNAL_SERVER_ERROR(500, 0, "Internal Server Error"),
 	FILE_READ_ERROR(500, 1, "File Read Error");
 	

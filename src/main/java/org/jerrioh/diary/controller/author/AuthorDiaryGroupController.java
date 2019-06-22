@@ -45,11 +45,16 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 		if (diaryGroup == null) {
 			throw new OdException(OdResponseType.DIARY_GROUP_NOT_FOUND);
 		}
+		
+		List<DiaryGroupAuthor> diaryGroupAuthors = diaryGroupAuthorRepository.findByDiaryGroupId(diaryGroup.getDiaryGroupId());
+		int currentAuthorCount = diaryGroupAuthors.size();
 
 		DiaryGroupResponse response = new DiaryGroupResponse();
 		response.setDiaryGroupId(diaryGroup.getDiaryGroupId());
 		response.setDiaryGroupName(diaryGroup.getDiaryGroupName());
+		response.setHostAuthorId(diaryGroup.getHostAuthorId());
 		response.setKeyword(diaryGroup.getKeyword());
+		response.setCurrentAuthorCount(currentAuthorCount);
 		response.setMaxAuthorCount(diaryGroup.getMaxAuthorCount());
 		response.setLanguage(diaryGroup.getLanguage());
 		response.setCountry(diaryGroup.getCountry());
@@ -91,12 +96,12 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 			throw new OdException(OdResponseType.DIARY_GROUP_NOT_FOUND);
 		}
 		
-		this.inviteAndSendInviteLetter(author, diaryGroup);
+		this.inviteAndReceiveInviteLetter(author, diaryGroup);
 
 		return ApiResponse.make(OdResponseType.OK);
 	}
 
-	private void inviteAndSendInviteLetter(Author author, DiaryGroup diaryGroup) {
+	private void inviteAndReceiveInviteLetter(Author author, DiaryGroup diaryGroup) {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.fullDateTime().withZone(DateTimeZone.forID(diaryGroup.getTimeZoneId()));
 		long durationDays = (diaryGroup.getEndTime().getTime() - diaryGroup.getStartTime().getTime()) / TimeUnit.DAYS.toMillis(1);
 		

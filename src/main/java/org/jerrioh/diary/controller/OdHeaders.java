@@ -1,7 +1,7 @@
 package org.jerrioh.diary.controller;
 
 public class OdHeaders {
-	public static final String TIMESTAMP = "Timpstamp";
+	public static final String TIMESTAMP = "Timestamp";
 	public static final String COUNTRY = "Country";
 	public static final String LANGUAGE = "Language";
 	public static final String TIME_ZONE_ID = "Time-Zone-Id";

@@ -3,7 +3,9 @@ package org.jerrioh.diary.controller.author.payload;
 public class DiaryGroupResponse {
 	private long diaryGroupId;
 	private String diaryGroupName;
+	private String hostAuthorId;
 	private String keyword;
+	private int currentAuthorCount;
 	private int maxAuthorCount;
 	private String country;
 	private String language;
@@ -23,11 +25,23 @@ public class DiaryGroupResponse {
 	public void setDiaryGroupName(String diaryGroupName) {
 		this.diaryGroupName = diaryGroupName;
 	}
+	public String getHostAuthorId() {
+		return hostAuthorId;
+	}
+	public void setHostAuthorId(String hostAuthorId) {
+		this.hostAuthorId = hostAuthorId;
+	}
 	public String getKeyword() {
 		return keyword;
 	}
 	public void setKeyword(String keyword) {
 		this.keyword = keyword;
+	}
+	public int getCurrentAuthorCount() {
+		return currentAuthorCount;
+	}
+	public void setCurrentAuthorCount(int currentAuthorCount) {
+		this.currentAuthorCount = currentAuthorCount;
 	}
 	public int getMaxAuthorCount() {
 		return maxAuthorCount;

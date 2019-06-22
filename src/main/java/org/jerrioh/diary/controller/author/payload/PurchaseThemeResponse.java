@@ -1,6 +1,6 @@
 package org.jerrioh.diary.controller.author.payload;
 
-public class ChangeDiaryThemeResponse {
+public class PurchaseThemeResponse {
 	private String themeName;
 	private String pattern0;
 	private String pattern1;

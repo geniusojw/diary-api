@@ -14,7 +14,7 @@ public class CacheScheduler extends AbstractScheduler {
 	@Autowired
 	private CacheManager cacheManager;
 
-	@Scheduled(cron = EVERY_0_SECOND)
+	@Scheduled(cron = EVERY_0_AND_30_MINUTE)
 	public void clearWeatherCache() {
 		evictAllCaches();
 	}
