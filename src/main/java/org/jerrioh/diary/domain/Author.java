@@ -74,4 +74,9 @@ public class Author {
 	public void setDeleted(boolean isDeleted) {
 		this.isDeleted = isDeleted;
 	}
+
+	@Override
+	public String toString() {
+		return "Author [nickname=" + nickname + "]";
+	}
 }

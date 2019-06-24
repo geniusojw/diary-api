@@ -2,7 +2,6 @@ package org.jerrioh.diary.controller.author;
 
 import javax.validation.Valid;
 
-import org.jerrioh.common.OdMessageSource;
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
 import org.jerrioh.diary.api.weather.WeatherClient;
@@ -27,9 +26,6 @@ public class AuthorUtilityController extends AuthorController {
 	
 	@Autowired
 	private WeatherClient weatherClient;
-	
-	@Autowired
-	private OdMessageSource messageSource;
 
 	@GetMapping(value = "/weather")
 	public ResponseEntity<ApiResponse<GetWeatherResponse>> getWeather(@Valid GetWeatherParameter parameter,

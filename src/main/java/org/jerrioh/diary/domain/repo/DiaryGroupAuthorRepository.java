@@ -9,4 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface DiaryGroupAuthorRepository extends JpaRepository<DiaryGroupAuthor, DiaryGroupAuthorPk> {
 
 	List<DiaryGroupAuthor> findByDiaryGroupId(long diaryGroupId);
+	DiaryGroupAuthor findByDiaryGroupIdAndAuthorId(long diaryGroupId, String authorId);
 }

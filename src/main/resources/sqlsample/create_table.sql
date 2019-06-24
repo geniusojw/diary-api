@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS letter
 CREATE TABLE IF NOT EXISTS diary_group
 (
   diary_group_id BIGINT NOT NULL AUTO_INCREMENT,
-  diary_group_name VARCHAR(255) NOT NULL,
+  diary_group_name VARCHAR(255) NULL,
   host_author_id VARCHAR(255) NOT NULL,
   keyword VARCHAR(80) NULL,
   max_author_count INT(11) NOT NULL,

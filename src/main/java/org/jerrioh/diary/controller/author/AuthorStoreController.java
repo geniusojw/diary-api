@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,8 +21,10 @@ import org.jerrioh.diary.controller.OdHeaders;
 import org.jerrioh.diary.controller.author.payload.ChangeDescriptionResponse;
 import org.jerrioh.diary.controller.author.payload.ChangeNicknameResponse;
 import org.jerrioh.diary.controller.author.payload.ChocolateDonationRequest;
+import org.jerrioh.diary.controller.author.payload.DiaryGroupCreateRequest;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupResponse;
-import org.jerrioh.diary.controller.author.payload.InviteTicketRequest;
+import org.jerrioh.diary.controller.author.payload.DiaryGroupSupportRequest;
+import org.jerrioh.diary.controller.author.payload.DiaryGroupSupportRequest.SupportType;
 import org.jerrioh.diary.controller.author.payload.PurchaseMusicResponse;
 import org.jerrioh.diary.controller.author.payload.PurchaseThemeResponse;
 import org.jerrioh.diary.controller.author.payload.StoreStatusResponse;
@@ -46,19 +49,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/author/store")
 public class AuthorStoreController extends AbstractAuthorController {
 	private static final Random RANDOM = new Random();
+	
+	// configuration values
 	private static final int DESCRIPTION_AND_NICKNAME_CHANGE_HOURS = 1;
+	private static final int DIARY_GROUP_INITITAL_MAX_AUTHOR_COUNT = 2;
+	private static final int DIARY_GROUP_INITITAL_DURATION_DAYS = 3;
+	private static final int DIARY_GROUP_LIMIT_MAX_AUTHOR_COUNT = 7;
+	private static final int DIARY_GROUP_LIMIT_DURATION_DAYS = 7;
 	
 	private Map<String, Long> authorTimestamps = new ConcurrentHashMap<>();
 	
 	static enum Item {
-		CHANGE_DESCRIPTION			("ITEM_CHANGE_DESCRIPTION", 1),
-		CHANGE_NICKNAME				("ITEM_CHANGE_NICKNAME", 1),
+		CHANGE_DESCRIPTION			("ITEM_CHANGE_DESCRIPTION", 2),
+		CHANGE_NICKNAME				("ITEM_CHANGE_NICKNAME", 2),
 		PURCHASE_THEME				("ITEM_PURCHASE_THEME", 10),
 		PURCHASE_MUSIC				("ITEM_PURCHASE_MUSIC", 15),
-		INVITE_TICKET1				("ITEM_INVITE_TICKET1", 10),
-		INVITE_TICKET2				("ITEM_INVITE_TICKET2", 20),
-		ALIAS_FEATURE_UNLIMITED_USE	("ITEM_ALIAS_FEATURE_UNLIMITED_USE", 5),
-		CHOCOLATE_DONATION			("ITEM_CHOCOLATE_DONATION", 2);
+		DIARY_GROUP_INVITATION		("ITEM_DIARY_GROUP_INVITATION", 3),
+		DIARY_GROUP_SUPPORT			("ITEM_DIARY_GROUP_SUPPORT", 3),
+		ALIAS_FEATURE_UNLIMITED_USE	("ITEM_ALIAS_FEATURE_UNLIMITED_USE", -1),
+		CHOCOLATE_DONATION			("ITEM_CHOCOLATE_DONATION", 2),
+		;
 
 		private Item(String itemId, int price) {
 			this.itemId = itemId;
@@ -83,10 +93,9 @@ public class AuthorStoreController extends AbstractAuthorController {
 		if (authorRepository.nickNameChangable(author.getAuthorId(), DESCRIPTION_AND_NICKNAME_CHANGE_HOURS) == 0) {
 			priceMap.put(Item.CHANGE_NICKNAME.itemId, -1);
 		}
-		DiaryGroup diaryGroup = diaryGroupRepository.findByAuthorId(author.getAuthorId());
+		DiaryGroup diaryGroup = diaryGroupRepository.findAcceptedOrAcceptableByAuthorId(author.getAuthorId());
 		if (diaryGroup != null) {
-			priceMap.put(Item.INVITE_TICKET1.itemId, -1);
-			priceMap.put(Item.INVITE_TICKET2.itemId, -1);
+			priceMap.put(Item.DIARY_GROUP_INVITATION.itemId, -1);
 		}
 		
 		StoreStatusResponse response = new StoreStatusResponse();
@@ -136,7 +145,6 @@ public class AuthorStoreController extends AbstractAuthorController {
 			
 			authorRepository.save(author);
 			authorRepository.insertNickNameHistory(author.getAuthorId());
-			
 
 			ChangeNicknameResponse response = new ChangeNicknameResponse();
 			response.setNickname(nickname);
@@ -144,6 +152,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 		});
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/purchase-theme")
 	public ResponseEntity<ApiResponse<PurchaseThemeResponse>> purchaseTheme(
 			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
@@ -180,6 +189,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 		});
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/purchase-music")
 	public ResponseEntity<ApiResponse<PurchaseMusicResponse>> purchaseMusic(
 			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
@@ -209,67 +219,39 @@ public class AuthorStoreController extends AbstractAuthorController {
 		});
 	}
 
-	@Transactional
-	@PostMapping(value = "/invite-ticket1")
-	public ResponseEntity<ApiResponse<DiaryGroupResponse>> invite1(@RequestBody @Valid InviteTicketRequest request,
-			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
-		return invite(request, Item.INVITE_TICKET1, 3, timestamp);
-	}
-
-	@Transactional
-	@PostMapping(value = "/invite-ticket2")
-	public ResponseEntity<ApiResponse<DiaryGroupResponse>> invite2(@RequestBody @Valid InviteTicketRequest request,
-			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
-		return invite(request, Item.INVITE_TICKET2, 6, timestamp);
-	}
-
-	@PostMapping(value = "/alias-feature-unlimited-use")
-	public ResponseEntity<ApiResponse<Object>> aliasFeatureUnlimitedUse(
-			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
-		return purchase(Item.ALIAS_FEATURE_UNLIMITED_USE, timestamp, () -> {
-			// purchase unlimited
-			
-			return ApiResponse.make(OdResponseType.OK);
-		});
-	}
-
-	@PostMapping(value = "/chocolate-donation")
-	public ResponseEntity<ApiResponse<Object>> chocolateDonation(@RequestBody @Valid ChocolateDonationRequest request,
-			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
-		return purchase(Item.CHOCOLATE_DONATION, timestamp, () -> {
-			// chocolate donation
-			
-			return ApiResponse.make(OdResponseType.OK);
-		});
-	}
-
-	private ResponseEntity<ApiResponse<DiaryGroupResponse>> invite(InviteTicketRequest request, Item item, int maxAuthorCount, Long timestamp) throws OdException {
-		return purchase(item, timestamp, () -> {
+	@Transactional(rollbackFor = Exception.class)
+	@PostMapping(value = "/diary-group-invitation")
+	public ResponseEntity<ApiResponse<DiaryGroupResponse>> createDiaryGroup(@RequestBody @Valid DiaryGroupCreateRequest request,
+			@RequestHeader(value = OdHeaders.LANGUAGE, required = true) String language,
+			@RequestHeader(value = OdHeaders.COUNTRY, required = true) String country,
+			@RequestHeader(value = OdHeaders.TIME_ZONE_ID, required = true) String timeZoneId,
+			@RequestHeader(value = OdHeaders.TIMESTAMP, required = true) Long timestamp) throws OdException {
+		return purchase(Item.DIARY_GROUP_INVITATION, timestamp, () -> {
 			Author author = super.getAuthor();
-			DateTimeZone dateTimeZone = super.getDateTimeZone(request.getTimeZoneId());
+			DateTimeZone dateTimeZone = super.getDateTimeZone(timeZoneId);
 			
-			DiaryGroup diaryGroup = diaryGroupRepository.findByAuthorId(author.getAuthorId());
+			DiaryGroup diaryGroup = diaryGroupRepository.findAcceptedOrAcceptableByAuthorId(author.getAuthorId());
 			if (diaryGroup != null) {
 				throw new OdException(OdResponseType.DIARY_GROUP_CONFLICT);
 			}
 
 			DateTime dateTime = new DateTime().withZone(dateTimeZone);
+			
 			int plusStartDays = 1;
-			int durationDays = 3;
 			if (TimeUnit.HOURS.convert(dateTime.getMillisOfDay(), TimeUnit.MILLISECONDS) > 12) {
 				plusStartDays++;
 			}
-			DateTime startDateTime = dateTime.plusDays(plusStartDays).withMillisOfDay(0);
-			DateTime endDateTime = startDateTime.plusDays(durationDays);
+			DateTime startDateTime = dateTime.plusDays(plusStartDays).withMillisOfDay(0); // group diary GMT기준으로 다음날 0시, 초대시작시간이 12시 이후라면 다다음날 0시 시작
+			DateTime endDateTime = startDateTime.plusDays(DIARY_GROUP_INITITAL_DURATION_DAYS);
 
 			diaryGroup = new DiaryGroup();
 			diaryGroup.setHostAuthorId(author.getAuthorId());
-			diaryGroup.setDiaryGroupName(request.getDiaryGroupName());
+			diaryGroup.setDiaryGroupName(null);
 			diaryGroup.setKeyword(request.getKeyword());
-			diaryGroup.setMaxAuthorCount(maxAuthorCount);
-			diaryGroup.setLanguage(request.getLanguage());
-			diaryGroup.setCountry(request.getCountry());
-			diaryGroup.setTimeZoneId(request.getTimeZoneId());
+			diaryGroup.setMaxAuthorCount(DIARY_GROUP_INITITAL_MAX_AUTHOR_COUNT);
+			diaryGroup.setLanguage(language);
+			diaryGroup.setCountry(country);
+			diaryGroup.setTimeZoneId(timeZoneId);
 			diaryGroup.setStartTime(new Timestamp(startDateTime.getMillis()));
 			diaryGroup.setEndTime(new Timestamp(endDateTime.getMillis()));
 
@@ -297,7 +279,87 @@ public class AuthorStoreController extends AbstractAuthorController {
 			return ApiResponse.make(OdResponseType.OK, response);
 		});
 	}
-	
+
+	@Transactional(rollbackFor = Exception.class)
+	@PostMapping(value = "/diary-group-support")
+	public ResponseEntity<ApiResponse<DiaryGroupResponse>> supportDiaryGroup(@RequestBody @Valid DiaryGroupSupportRequest request,
+			@RequestHeader(value = OdHeaders.TIMESTAMP, required = true) Long timestamp) throws OdException {
+		return purchase(Item.DIARY_GROUP_SUPPORT, timestamp, () -> {
+			Author author = super.getAuthor();
+			
+			DiaryGroup diaryGroup = diaryGroupRepository.findAcceptedByAuthorId(author.getAuthorId());
+			if (diaryGroup == null) {
+				throw new OdException(OdResponseType.DIARY_GROUP_NOT_FOUND);
+			}
+			
+			if (SupportType.SCALE.equals(request.getSupportType())) {
+				int maxAuthorCount = diaryGroup.getMaxAuthorCount() + 1;
+				if (maxAuthorCount > DIARY_GROUP_LIMIT_MAX_AUTHOR_COUNT) {
+					OdLogger.info("Exceeded the maximum. maxAuthorCount={}", maxAuthorCount);
+					throw new OdException(OdResponseType.PRECONDITION_FAILED);	
+				}
+				diaryGroup.setMaxAuthorCount(maxAuthorCount);	
+				
+			} else if (SupportType.PERIOD.equals(request.getSupportType())) {
+				DateTime startDateTime = new DateTime(diaryGroup.getStartTime());
+				DateTime extendEndDateTime = new DateTime(diaryGroup.getEndTime()).plusDays(1);
+				long durationMillis = extendEndDateTime.getMillis() - startDateTime.getMillis();
+				long durationDays = TimeUnit.DAYS.convert(durationMillis, TimeUnit.MILLISECONDS);
+				if (durationDays > DIARY_GROUP_LIMIT_DURATION_DAYS) {
+					OdLogger.info("Exceeded the maximum. durationMillis={}, durationDays={}", durationMillis, durationDays);
+					throw new OdException(OdResponseType.PRECONDITION_FAILED);	
+				}
+				diaryGroup.setEndTime(new Timestamp(extendEndDateTime.getMillis()));
+				
+			} else {
+				OdLogger.info("Unexpected support type. request.getSupportType()={}", request.getSupportType());
+				throw new OdException(OdResponseType.INTERNAL_SERVER_ERROR);
+			}
+
+			diaryGroupRepository.save(diaryGroup);
+			
+			List<DiaryGroupAuthor> diaryGroupAuthors = diaryGroupAuthorRepository.findByDiaryGroupId(diaryGroup.getDiaryGroupId());
+			int currentAuthorCount = diaryGroupAuthors.size();
+
+			DiaryGroupResponse response = new DiaryGroupResponse();
+			response.setDiaryGroupId(diaryGroup.getDiaryGroupId());
+			response.setDiaryGroupName(diaryGroup.getDiaryGroupName());
+			response.setHostAuthorId(diaryGroup.getHostAuthorId());
+			response.setKeyword(diaryGroup.getKeyword());
+			response.setCurrentAuthorCount(currentAuthorCount);
+			response.setMaxAuthorCount(diaryGroup.getMaxAuthorCount());
+			response.setLanguage(diaryGroup.getLanguage());
+			response.setCountry(diaryGroup.getCountry());
+			response.setTimeZoneId(diaryGroup.getTimeZoneId());
+			response.setStartTime(diaryGroup.getStartTime().getTime());
+			response.setEndTime(diaryGroup.getEndTime().getTime());
+
+			return ApiResponse.make(OdResponseType.OK, response);
+		});
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@PostMapping(value = "/alias-feature-unlimited-use")
+	public ResponseEntity<ApiResponse<Object>> aliasFeatureUnlimitedUse(
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
+		return purchase(Item.ALIAS_FEATURE_UNLIMITED_USE, timestamp, () -> {
+			// purchase unlimited
+			
+			return ApiResponse.make(OdResponseType.OK);
+		});
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@PostMapping(value = "/chocolate-donation")
+	public ResponseEntity<ApiResponse<Object>> chocolateDonation(@RequestBody @Valid ChocolateDonationRequest request,
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
+		return purchase(Item.CHOCOLATE_DONATION, timestamp, () -> {
+			// chocolate donation
+			
+			return ApiResponse.make(OdResponseType.OK);
+		});
+	}
+
 	@FunctionalInterface
 	private interface Purchaser<R> {
 		ResponseEntity<ApiResponse<R>> purchase() throws OdException;

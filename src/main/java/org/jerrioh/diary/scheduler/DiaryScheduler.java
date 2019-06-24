@@ -17,8 +17,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class DiaryScheduler extends AbstractScheduler {
 	
-	@Scheduled(cron = EVERY_0_AND_12_HOUR)
+	@Scheduled(cron = ON_0_AND_12_HOUR)
 	public void updateAuthorAnalyzed() {
+		OdLogger.info("Scheduler - updateAuthorAnalyzed() started");
+		
 		BiFunction<String, Integer, Integer> increaseCountFunction = (key, count) -> {
 			return count == null ? 1 : count + 1;
 		};
@@ -34,7 +36,7 @@ public class DiaryScheduler extends AbstractScheduler {
 			}
 			List<AuthorDiary> authorDiaries = authorDiaryRepository.findByAuthorIdOrderByDiaryDateDesc(author.getAuthorId());
 			if (authorDiaries.size() < 3) {
-				return;
+				continue;
 			}
 			
 			String language = null;
@@ -87,5 +89,6 @@ public class DiaryScheduler extends AbstractScheduler {
 			}
 		}
 
+		OdLogger.info("Scheduler - updateAuthorAnalyzed() finished");
 	}
 }

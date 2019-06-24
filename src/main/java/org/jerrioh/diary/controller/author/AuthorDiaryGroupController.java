@@ -6,11 +6,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import javax.validation.Valid;
+
 import org.jerrioh.common.Code;
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
 import org.jerrioh.common.util.OdLogger;
 import org.jerrioh.diary.controller.author.payload.AuthorDiaryGroupResponse;
+import org.jerrioh.diary.controller.author.payload.DiaryGroupRespondRequest;
+import org.jerrioh.diary.controller.author.payload.DiaryGroupRespondRequest.InvitationResponseType;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupResponse;
 import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Author;
@@ -26,8 +30,10 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,8 +46,7 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 	@GetMapping
 	public ResponseEntity<ApiResponse<DiaryGroupResponse>> getDiaryGroup() throws OdException {
 		Author author = super.getAuthor();
-
-		DiaryGroup diaryGroup = diaryGroupRepository.findByAuthorId(author.getAuthorId());
+		DiaryGroup diaryGroup = diaryGroupRepository.findAcceptedByAuthorId(author.getAuthorId());
 		if (diaryGroup == null) {
 			throw new OdException(OdResponseType.DIARY_GROUP_NOT_FOUND);
 		}
@@ -69,8 +74,7 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 	public ResponseEntity<ApiResponse<Object>> beInvited() throws OdException {
 		Author author = super.getAuthor();
 
-		// 이미 포함된 그룹이 있다.
-		DiaryGroup diaryGroup = diaryGroupRepository.findByAuthorId(author.getAuthorId());
+		DiaryGroup diaryGroup = diaryGroupRepository.findAcceptedOrAcceptableByAuthorId(author.getAuthorId());
 		if (diaryGroup != null) {
 			throw new OdException(OdResponseType.DIARY_GROUP_CONFLICT);
 		}
@@ -96,12 +100,84 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 			throw new OdException(OdResponseType.DIARY_GROUP_NOT_FOUND);
 		}
 		
-		this.inviteAndReceiveInviteLetter(author, diaryGroup);
+		this.beInvitedAndReceiveLetter(author, diaryGroup);
 
 		return ApiResponse.make(OdResponseType.OK);
 	}
 
-	private void inviteAndReceiveInviteLetter(Author author, DiaryGroup diaryGroup) {
+	@Transactional(rollbackFor = Exception.class)
+	@PostMapping("/respond")
+	public ResponseEntity<ApiResponse<Object>> respond(@RequestBody @Valid DiaryGroupRespondRequest request) throws OdException {
+		Author author = super.getAuthor();
+
+		DiaryGroup diaryGroup = diaryGroupRepository.findAcceptedOrAcceptableByAuthorId(author.getAuthorId());
+		if (diaryGroup == null) {
+			throw new OdException(OdResponseType.DIARY_GROUP_NOT_FOUND);
+		}
+		
+		DiaryGroupAuthor diaryGroupAuthor = diaryGroupAuthorRepository.findByDiaryGroupIdAndAuthorId(diaryGroup.getDiaryGroupId(), author.getAuthorId());
+		if (diaryGroupAuthor.getAuthorStatus() != AuthorStatus.INVITE) {
+			OdLogger.info("Author status is not INVITE. authorStatus = {}", diaryGroupAuthor.getAuthorStatus());
+			throw new OdException(OdResponseType.DIARY_GROUP_NOT_FOUND);
+		}
+		
+		if (InvitationResponseType.ACCEPT.equals(request.getInvitationResponseType())) {
+			diaryGroupAuthor.setAuthorStatus(AuthorStatus.ACCEPT);
+		} else if (InvitationResponseType.REFUSE.equals(request.getInvitationResponseType())) {
+			diaryGroupAuthor.setAuthorStatus(AuthorStatus.REFUSE);
+		} else {
+			OdLogger.info("Unexpected invitation response type. request.getInvitationResponseType()={}", request.getInvitationResponseType());
+			throw new OdException(OdResponseType.INTERNAL_SERVER_ERROR);
+		}
+		
+		diaryGroupAuthorRepository.save(diaryGroupAuthor);
+		
+		return ApiResponse.make(OdResponseType.OK);
+	}
+	
+	@GetMapping("/yesterday-diaries")
+	public ResponseEntity<ApiResponse<List<AuthorDiaryGroupResponse>>> readYesterdayDiaries() throws OdException {
+		Author author = super.getAuthor();
+
+		DiaryGroup diaryGroup = diaryGroupRepository.findAcceptedByAuthorId(author.getAuthorId());
+		if (diaryGroup == null) {
+			throw new OdException(OdResponseType.DIARY_GROUP_NOT_FOUND);
+		}
+		
+		DateTime startDateTime = new DateTime(diaryGroup.getStartTime());
+		DateTime now = DateTime.now();
+		if (startDateTime.compareTo(now) > 0) { // 시작 전
+			OdLogger.info("Diary group is not started. startDateTime = {}, now = {}", startDateTime, now);
+			throw new OdException(OdResponseType.PRECONDITION_FAILED);
+		}
+		
+		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyyMMdd");
+		String yesterdayDate = DateTime.now(DateTimeZone.forID(diaryGroup.getTimeZoneId())).minusDays(1).toString(dateTimeFormatter);
+		
+		// TODO one to many, many to one 적용 -> performance 개선
+		List<AuthorDiaryGroupResponse> responses = new ArrayList<>();
+		List<DiaryGroupAuthor> diaryGroupAuthors = diaryGroupAuthorRepository.findByDiaryGroupId(diaryGroup.getDiaryGroupId());
+		for (DiaryGroupAuthor diaryGroupAuthor : diaryGroupAuthors) {
+			if (diaryGroupAuthor.getAuthorStatus() == AuthorStatus.ACCEPT) {
+				Author authorParticipated = authorRepository.findByAuthorId(diaryGroupAuthor.getAuthorId());
+				if (authorParticipated != null && !authorParticipated.isDeleted()) {
+					AuthorDiaryGroupResponse response = new AuthorDiaryGroupResponse();
+					response.setAuthorId(authorParticipated.getAuthorId());
+					response.setNickname(authorParticipated.getNickname());
+					AuthorDiary diary = authorDiaryRepository.findByAuthorIdAndDiaryDate(authorParticipated.getAuthorId(), yesterdayDate);
+					if (diary != null) {
+						response.setTitle(diary.getTitle());
+						response.setContent(diary.getContent());
+					}
+					responses.add(response);
+				}
+			}
+		}
+		
+		return ApiResponse.make(OdResponseType.OK, responses);
+	}
+
+	private void beInvitedAndReceiveLetter(Author author, DiaryGroup diaryGroup) {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.fullDateTime().withZone(DateTimeZone.forID(diaryGroup.getTimeZoneId()));
 		long durationDays = (diaryGroup.getEndTime().getTime() - diaryGroup.getStartTime().getTime()) / TimeUnit.DAYS.toMillis(1);
 		
@@ -142,40 +218,5 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 		diaryGroupAuthor.setAuthorId(author.getAuthorId());
 		diaryGroupAuthor.setAuthorStatus(AuthorStatus.INVITE);
 		diaryGroupAuthorRepository.save(diaryGroupAuthor);
-	}
-	
-	@GetMapping("/yesterday-diaries")
-	public ResponseEntity<ApiResponse<List<AuthorDiaryGroupResponse>>> readYesterdayDiaries() throws OdException {
-		Author author = super.getAuthor();
-
-		DiaryGroup diaryGroup = diaryGroupRepository.findByAuthorId(author.getAuthorId());
-		if (diaryGroup == null) {
-			throw new OdException(OdResponseType.DIARY_GROUP_NOT_FOUND);
-		}
-		
-		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyyMMdd");
-		String yesterdayDate = DateTime.now(DateTimeZone.forID(diaryGroup.getTimeZoneId())).minusDays(1).toString(dateTimeFormatter);
-		
-		// TODO one to many, many to one 적용 -> performance 개선
-		List<AuthorDiaryGroupResponse> responses = new ArrayList<>();
-		List<DiaryGroupAuthor> diaryGroupAuthors = diaryGroupAuthorRepository.findByDiaryGroupId(diaryGroup.getDiaryGroupId());
-		for (DiaryGroupAuthor diaryGroupAuthor : diaryGroupAuthors) {
-			if (diaryGroupAuthor.getAuthorStatus() == AuthorStatus.ACCEPT) {
-				Author authorParticipated = authorRepository.findByAuthorId(diaryGroupAuthor.getAuthorId());
-				if (authorParticipated != null && !authorParticipated.isDeleted()) {
-					AuthorDiaryGroupResponse response = new AuthorDiaryGroupResponse();
-					response.setAuthorId(authorParticipated.getAuthorId());
-					response.setNickname(authorParticipated.getNickname());
-					AuthorDiary diary = authorDiaryRepository.findByAuthorIdAndDiaryDate(authorParticipated.getAuthorId(), yesterdayDate);
-					if (diary != null) {
-						response.setTitle(diary.getTitle());
-						response.setContent(diary.getContent());
-					}
-					responses.add(response);
-				}
-			}
-		}
-		
-		return ApiResponse.make(OdResponseType.OK, responses);
 	}
 }
