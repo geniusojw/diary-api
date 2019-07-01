@@ -1,5 +1,7 @@
 package org.jerrioh.diary.controller.author;
 
+import java.util.UUID;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jerrioh.common.exception.OdAuthenticationException;
 import org.jerrioh.common.exception.OdException;
@@ -14,6 +16,7 @@ import org.jerrioh.diary.domain.repo.AuthorLetterRepository;
 import org.jerrioh.diary.domain.repo.AuthorRepository;
 import org.jerrioh.diary.domain.repo.DiaryGroupAuthorRepository;
 import org.jerrioh.diary.domain.repo.DiaryGroupRepository;
+import org.jerrioh.diary.domain.repo.PostRepository;
 import org.jerrioh.security.authentication.after.CompleteAuthorToken;
 import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +36,8 @@ public abstract class AbstractAuthorController extends AbstractController {
 	protected DiaryGroupRepository diaryGroupRepository;
 	@Autowired
 	protected DiaryGroupAuthorRepository diaryGroupAuthorRepository;
+	@Autowired
+	protected PostRepository postRepository;
 
 	protected Author getAuthor() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -77,5 +82,9 @@ public abstract class AbstractAuthorController extends AbstractController {
 		return StringUtil.randomString("당신은 일기를 좀 더 써야된다.",
 				"일기모임에 참여해보세요. 등등",
 				"당신은 사실 멍청합니다. 사람들은 당신이 멍청하다고 생각합니다.");
+	}
+
+	protected String generatePostId() {
+		return UUID.randomUUID().toString();
 	}
 }

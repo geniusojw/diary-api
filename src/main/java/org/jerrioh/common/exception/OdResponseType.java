@@ -8,12 +8,15 @@ public enum OdResponseType {
 	BAD_REQUEST(400, 0, "Bad Request"),
 	UNAUTHORIZED(401, 0, "Unauthorized"),
 	PAYMENT_REQUIRED(402, 0, "Payment Required"),
+
+	FORBIDDEN(403, 0, "Forbidden"),
 	
 	NOT_FOUND(404, 0, "Not Found"),
 	USER_NOT_FOUND(404, 1, "User Not Found"),
 	DIARY_NOT_FOUND(404, 2, "Diary Not Found"),
 	LETTER_NOT_FOUND(404, 3, "Letter Not Found"),
 	DIARY_GROUP_NOT_FOUND(404, 4, "Diary Group Not Found"),
+	POST_NOT_FOUND(404, 5, "Post Not Found"),
 	
 	CONFLICT(409, 0, "Conflict"),
 	USER_CONFLICT(409, 1, "User Already Exsits"),

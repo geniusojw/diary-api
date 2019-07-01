@@ -17,7 +17,9 @@ import javax.validation.Valid;
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
 import org.jerrioh.common.util.OdLogger;
+import org.jerrioh.diary.api.weather.WeatherClient;
 import org.jerrioh.diary.controller.OdHeaders;
+import org.jerrioh.diary.controller.author.payload.BuyPostItRequest;
 import org.jerrioh.diary.controller.author.payload.ChangeDescriptionResponse;
 import org.jerrioh.diary.controller.author.payload.ChangeNicknameResponse;
 import org.jerrioh.diary.controller.author.payload.ChocolateDonationRequest;
@@ -25,6 +27,8 @@ import org.jerrioh.diary.controller.author.payload.DiaryGroupCreateRequest;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupResponse;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupSupportRequest;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupSupportRequest.SupportType;
+import org.jerrioh.diary.controller.author.payload.GetWeatherRequest;
+import org.jerrioh.diary.controller.author.payload.GetWeatherResponse;
 import org.jerrioh.diary.controller.author.payload.PurchaseMusicResponse;
 import org.jerrioh.diary.controller.author.payload.PurchaseThemeResponse;
 import org.jerrioh.diary.controller.author.payload.StoreStatusResponse;
@@ -33,8 +37,12 @@ import org.jerrioh.diary.domain.Author;
 import org.jerrioh.diary.domain.DiaryGroup;
 import org.jerrioh.diary.domain.DiaryGroupAuthor;
 import org.jerrioh.diary.domain.DiaryGroupAuthor.AuthorStatus;
+import org.jerrioh.diary.domain.Post;
+import org.jerrioh.diary.domain.Post.PostStatus;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +56,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/author/store")
 public class AuthorStoreController extends AbstractAuthorController {
+	
+	@Value(value = "${apis.openweathermap.auth}")
+	private String weatherApiKey;
+
+	@Autowired
+	private WeatherClient weatherClient;
+	
 	private static final Random RANDOM = new Random();
 	
 	// configuration values
@@ -60,13 +75,14 @@ public class AuthorStoreController extends AbstractAuthorController {
 	private Map<String, Long> authorTimestamps = new ConcurrentHashMap<>();
 	
 	static enum Item {
-		CHANGE_DESCRIPTION			("ITEM_CHANGE_DESCRIPTION", 2),
-		CHANGE_NICKNAME				("ITEM_CHANGE_NICKNAME", 2),
+		WEATHER						("ITEM_WEATHER", 0),
+		POST_IT						("ITEM_POST_IT", 0),
+		CHANGE_DESCRIPTION			("ITEM_CHANGE_DESCRIPTION", 3),
+		CHANGE_NICKNAME				("ITEM_CHANGE_NICKNAME", 3),
 		PURCHASE_THEME				("ITEM_PURCHASE_THEME", 10),
-		PURCHASE_MUSIC				("ITEM_PURCHASE_MUSIC", 15),
-		DIARY_GROUP_INVITATION		("ITEM_DIARY_GROUP_INVITATION", 3),
-		DIARY_GROUP_SUPPORT			("ITEM_DIARY_GROUP_SUPPORT", 3),
-		ALIAS_FEATURE_UNLIMITED_USE	("ITEM_ALIAS_FEATURE_UNLIMITED_USE", -1),
+		PURCHASE_MUSIC				("ITEM_PURCHASE_MUSIC", 10),
+		DIARY_GROUP_INVITATION		("ITEM_DIARY_GROUP_INVITATION", 4),
+		DIARY_GROUP_SUPPORT			("ITEM_DIARY_GROUP_SUPPORT", 2),
 		CHOCOLATE_DONATION			("ITEM_CHOCOLATE_DONATION", 2),
 		;
 
@@ -87,6 +103,10 @@ public class AuthorStoreController extends AbstractAuthorController {
 		for (Item item : Item.values()) {
 			priceMap.put(item.itemId, item.price);
 		}
+		Post post = postRepository.findMyNotPosted(author.getAuthorId());
+		if (post != null) {
+			priceMap.put(Item.POST_IT.itemId, -1);
+		}
 		if (authorRepository.descriptionChangable(author.getAuthorId(), DESCRIPTION_AND_NICKNAME_CHANGE_HOURS) == 0) {
 			priceMap.put(Item.CHANGE_DESCRIPTION.itemId, -1);
 		}
@@ -102,6 +122,56 @@ public class AuthorStoreController extends AbstractAuthorController {
 		response.setChocolates(author.getChocolates());
 		response.setPriceMap(priceMap);
 		return ApiResponse.make(OdResponseType.OK, response);
+	}
+	
+	@Transactional(rollbackFor = Exception.class)
+	@PostMapping(value = "/weather")
+	public ResponseEntity<ApiResponse<GetWeatherResponse>> getWeather(@Valid GetWeatherRequest request,
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp,
+			@RequestHeader(value = OdHeaders.LANGUAGE) String language) throws OdException {
+		return purchase(Item.WEATHER, timestamp, () -> {
+			String cityName = request.getCity();
+			String countryCode = request.getCountry();
+			
+			String query = String.join(",", cityName, countryCode);
+			ResponseEntity<org.jerrioh.diary.api.weather.payload.GetWeatherResponse> feignResponse = weatherClient.weather(query, weatherApiKey);
+			String description = feignResponse.getBody().getWeather().get(0).getDescription();
+			
+			String message = messageSource.getMessage("weather.description", language, description);
+			
+			GetWeatherResponse response = new GetWeatherResponse();
+			response.setDescription(message);
+			return ApiResponse.make(OdResponseType.OK, response);
+		});
+	}
+	
+	@Transactional(rollbackFor = Exception.class)
+	@PostMapping(value = "/buy-post-it")
+	public ResponseEntity<ApiResponse<Object>> butPostIt(@Valid BuyPostItRequest request,
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
+		return purchaseNoPrice(Item.POST_IT, request.getPrice(), timestamp, () -> {
+			Author author = AuthorStoreController.this.getAuthor();
+			Post post = postRepository.findMyNotPosted(author.getAuthorId());
+			if (post != null) {
+				throw new OdException(OdResponseType.PRECONDITION_FAILED);
+			}
+			
+			post = new Post();
+			post.setPostId(generatePostId());
+			post.setPostStatus(PostStatus.NOT_POSTED);
+			post.setAuthorId(author.getAuthorId());
+			post.setAuthorNickname(author.getNickname());
+			post.setChocolates(request.getPrice());
+			post.setContent(null);
+			post.setLanguage(null);
+			post.setCountry(null);
+			post.setTimeZoneId(null);
+			post.setWrittenTime(null);
+			
+			postRepository.save(post);
+			
+			return ApiResponse.make(OdResponseType.OK);
+		});
 	}
 
 	@Transactional(rollbackFor = Exception.class)
@@ -339,17 +409,6 @@ public class AuthorStoreController extends AbstractAuthorController {
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	@PostMapping(value = "/alias-feature-unlimited-use")
-	public ResponseEntity<ApiResponse<Object>> aliasFeatureUnlimitedUse(
-			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
-		return purchase(Item.ALIAS_FEATURE_UNLIMITED_USE, timestamp, () -> {
-			// purchase unlimited
-			
-			return ApiResponse.make(OdResponseType.OK);
-		});
-	}
-
-	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/chocolate-donation")
 	public ResponseEntity<ApiResponse<Object>> chocolateDonation(@RequestBody @Valid ChocolateDonationRequest request,
 			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
@@ -363,6 +422,23 @@ public class AuthorStoreController extends AbstractAuthorController {
 	@FunctionalInterface
 	private interface Purchaser<R> {
 		ResponseEntity<ApiResponse<R>> purchase() throws OdException;
+	}
+	
+	private <R> ResponseEntity<ApiResponse<R>> purchaseNoPrice(Item item, int price, Long timestamp, Purchaser<R> purchaser) throws OdException {
+		Author author = super.getAuthor();
+		
+		Long previousTimestamp = authorTimestamps.get(author.getAuthorId());
+		if (previousTimestamp != null && previousTimestamp.compareTo(timestamp) == 0) {
+			OdLogger.info("Repetitive purchase request. author={}, price={}, item={}, timestamp={}", author.getAuthorId(), price, item, timestamp);
+			throw new OdException(OdResponseType.TOO_MANY_REQUESTS);
+		}
+		authorTimestamps.put(author.getAuthorId(), timestamp);
+		
+		this.throwExceptionIfHasNotEnoughChocolates(author, price);
+		ResponseEntity<ApiResponse<R>> purchase = purchaser.purchase();
+		this.payChocolates(author, price, item.itemId);
+		
+		return purchase;
 	}
 	
 	private <R> ResponseEntity<ApiResponse<R>> purchase(Item item, Long timestamp, Purchaser<R> purchaser) throws OdException {

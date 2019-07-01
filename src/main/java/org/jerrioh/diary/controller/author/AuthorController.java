@@ -34,7 +34,7 @@ public class AuthorController extends AbstractAuthorController {
 		author.setAuthorCode(generateAuthorCode());
 		author.setNickname(generateNickName());
 		author.setDescription(generateDescription());
-		author.setChocolates(0);
+		author.setChocolates(15);
 		authorRepository.save(author);
 
 		authorRepository.insertNickNameHistory(author.getAuthorId());

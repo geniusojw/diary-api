@@ -118,3 +118,19 @@ CREATE TABLE IF NOT EXISTS diary_group_author
   author_status INT(11) NOT NULL COMMENT '0: invite, 1: accept, 2: refuse',
   CONSTRAINT diary_group_author_pk PRIMARY KEY (diary_group_id, author_id)
 );
+
+CREATE TABLE IF NOT EXISTS post
+(
+  post_id VARCHAR(100) NOT NULL,
+  author_id VARCHAR(255) NOT NULL,
+  author_nickname VARCHAR(50) NOT NULL,
+  chocolates INT(11) NOT NULL,
+  content VARCHAR(3000) NULL,
+  language VARCHAR(10) NULL,
+  country VARCHAR(10) NULL,
+  time_zone_id VARCHAR(30) NULL,
+  post_status INT(11) NOT NULL COMMENT '0: not-posted, 1: posted',
+  written_time TIMESTAMP NULL,
+  CONSTRAINT post_pk PRIMARY KEY (post_id)
+);
+
