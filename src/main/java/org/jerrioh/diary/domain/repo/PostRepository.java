@@ -23,6 +23,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
 			+ "AND LANGUAGE = :language "
 			+ "AND COUNTRY = :country "
 			+ "AND TIME_ZONE_ID = :timeZoneId "
-			+ "ORDER BY CHOCOLATES, WRITTEN_TIME DESC", nativeQuery = true)
+			+ "ORDER BY CHOCOLATES, WRITTEN_TIME DESC "
+			+ "LIMIT 50", nativeQuery = true)
 	List<Post> findTodaysPosts(@Param("fromTime") Timestamp fromTime, @Param("language") String language, @Param("country") String country, @Param("timeZoneId") String timeZoneId);
 }

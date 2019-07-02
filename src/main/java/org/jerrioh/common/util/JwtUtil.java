@@ -1,6 +1,7 @@
 package org.jerrioh.common.util;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import org.jerrioh.common.Util;
 import org.jerrioh.common.exception.OdAuthenticationException;
@@ -15,9 +16,9 @@ public class JwtUtil extends Util {
 	private static String jwtSecret;
 	private static long jwtExpirationInMs;
 	
-	public static void setUp(String jwtSecret, long jwtExpirationInMs) {
+	public static void setUp(String jwtSecret, long jwtExpirationDays) {
 		JwtUtil.jwtSecret = jwtSecret;
-		JwtUtil.jwtExpirationInMs = jwtExpirationInMs;
+		JwtUtil.jwtExpirationInMs = TimeUnit.DAYS.toMillis(jwtExpirationDays);
 	}
 
 	public static String generateJwt(String email) {

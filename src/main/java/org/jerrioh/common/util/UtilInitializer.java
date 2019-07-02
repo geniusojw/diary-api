@@ -10,12 +10,12 @@ public class UtilInitializer {
 	@Value("${jwt.jwtscret}")
 	private String jwtSecret;
 
-	@Value("${jwt.jwt-expiration-in-ms}")
-	private String jwtExpirationInMs;
+	@Value("${jwt.jwt-expiration-days}")
+	private String jwtExpirationDays;
 
 	@PostConstruct
 	public void init() {
-		Long jwtExpiration = Long.parseLong(jwtExpirationInMs);
+		Long jwtExpiration = Long.parseLong(jwtExpirationDays);
 		JwtUtil.setUp(jwtSecret, jwtExpiration);
 	}
 }
