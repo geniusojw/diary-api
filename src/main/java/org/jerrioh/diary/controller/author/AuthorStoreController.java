@@ -126,7 +126,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 	
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/weather")
-	public ResponseEntity<ApiResponse<GetWeatherResponse>> getWeather(@Valid GetWeatherRequest request,
+	public ResponseEntity<ApiResponse<GetWeatherResponse>> getWeather(@RequestBody @Valid GetWeatherRequest request,
 			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp,
 			@RequestHeader(value = OdHeaders.LANGUAGE) String language) throws OdException {
 		return purchase(Item.WEATHER, timestamp, () -> {
@@ -147,7 +147,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 	
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/buy-post-it")
-	public ResponseEntity<ApiResponse<Object>> butPostIt(@Valid BuyPostItRequest request,
+	public ResponseEntity<ApiResponse<Object>> butPostIt(@RequestBody @Valid BuyPostItRequest request,
 			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
 		return purchaseNoPrice(Item.POST_IT, request.getPrice(), timestamp, () -> {
 			Author author = AuthorStoreController.this.getAuthor();

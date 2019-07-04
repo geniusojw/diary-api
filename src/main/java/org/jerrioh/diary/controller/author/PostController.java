@@ -30,13 +30,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController extends AbstractAuthorController {
 
 	@GetMapping(value = "/has-post")
-	public ResponseEntity<ApiResponse<Object>> hasPost() throws OdException {
+	public ResponseEntity<ApiResponse<PostResponse>> hasPost() throws OdException {
 		Author author = super.getAuthor();
 		Post post = postRepository.findMyNotPosted(author.getAuthorId());
 		if (post == null) {
 			throw new OdException(OdResponseType.POST_NOT_FOUND);
 		}
-		return ApiResponse.make(OdResponseType.OK);
+
+		PostResponse response = new PostResponse();
+		response.setPostId(post.getPostId());
+		response.setAuthorNickname(post.getAuthorNickname());
+		response.setChocolates(post.getChocolates());
+		response.setContent(post.getContent());
+		response.setWrittenTime(0L);
+		
+		return ApiResponse.make(OdResponseType.OK, response);
 	}
 
 	@Transactional(rollbackFor = Exception.class)
@@ -65,7 +73,7 @@ public class PostController extends AbstractAuthorController {
 	}
 
 	@GetMapping
-	public ResponseEntity<ApiResponse<Object>> getPosts(
+	public ResponseEntity<ApiResponse<List<PostResponse>>> getPosts(
 			@RequestHeader(value = OdHeaders.LANGUAGE) String language,
 			@RequestHeader(value = OdHeaders.COUNTRY) String country,
 			@RequestHeader(value = OdHeaders.TIME_ZONE_ID) String timeZoneId) throws OdException {
