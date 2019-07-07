@@ -116,24 +116,20 @@ public class LoggingFilter extends CommonsRequestLoggingFilter {
 		msg.append(prefix);
 		msg.append("status=").append(response.getStatus()).append("(").append(HttpStatus.valueOf(response.getStatus()).getReasonPhrase()).append(")");
 		
-		if (isIncludeHeaders()) {
-			HttpHeaders httpHeaders = new HttpHeaders();
-			for (String headerName : response.getHeaderNames()) {
-				for (String headerValue : response.getHeaders(headerName)) {
-					httpHeaders.add(headerName, headerValue);
-				}
+		HttpHeaders httpHeaders = new HttpHeaders();
+		for (String headerName : response.getHeaderNames()) {
+			for (String headerValue : response.getHeaders(headerName)) {
+				httpHeaders.add(headerName, headerValue);
 			}
-			msg.append(";headers=").append(httpHeaders);
 		}
+		msg.append(";headers=").append(httpHeaders);
 
-		if (isIncludePayload()) {
-			byte[] content = response.getContentAsByteArray();
-			if (content.length > 0) {
-				try {
-					msg.append("\n;payload=").append(new String(content, response.getCharacterEncoding()));
-				} catch (UnsupportedEncodingException e) {
-					msg.append(";payload=[unknown]");
-				}
+		byte[] content = response.getContentAsByteArray();
+		if (content.length > 0) {
+			try {
+				msg.append("\n;payload=").append(new String(content, response.getCharacterEncoding()));
+			} catch (UnsupportedEncodingException e) {
+				msg.append(";payload=[unknown]");
 			}
 		}
 

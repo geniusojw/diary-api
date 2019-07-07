@@ -19,7 +19,9 @@ import org.jerrioh.diary.domain.Author;
 import org.jerrioh.diary.domain.AuthorLetter;
 import org.jerrioh.diary.domain.AuthorLetter.LetterType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -87,6 +89,10 @@ public class AuthorLetterController extends AbstractAuthorController {
 
 		List<AuthorLetterResponse> responses = new ArrayList<>();
 		for (AuthorLetter letter : letters) {
+			if (letter.isDeleted()) {
+				continue;
+			}
+			
 			AuthorLetterResponse response = new AuthorLetterResponse();
 			response.setLetterId(letter.getLetterId());
 			response.setLetterType(letter.getLetterType());
@@ -100,5 +106,17 @@ public class AuthorLetterController extends AbstractAuthorController {
 		}
 
 		return ApiResponse.make(OdResponseType.OK, responses);
+	}
+
+	@DeleteMapping(value = "/{letterId}")
+	public ResponseEntity<ApiResponse<Object>> deleteLetter(@PathVariable(name = "letterId") String letterId) throws OdException {
+		
+		AuthorLetter letter = authorLetterRepository.findByLetterId(letterId);
+		if (letter == null || letter.isDeleted()) {
+			throw new OdException(OdResponseType.LETTER_NOT_FOUND);
+		}
+		letter.setDeleted(true);
+		authorLetterRepository.save(letter);
+		return ApiResponse.make(OdResponseType.OK);
 	}
 }

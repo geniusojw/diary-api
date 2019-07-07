@@ -165,7 +165,7 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 					response.setAuthorId(authorParticipated.getAuthorId());
 					response.setNickname(authorParticipated.getNickname());
 					AuthorDiary diary = authorDiaryRepository.findByAuthorIdAndDiaryDate(authorParticipated.getAuthorId(), yesterdayDate);
-					if (diary != null) {
+					if (diary != null && !diary.isDeleted()) {
 						response.setTitle(diary.getTitle());
 						response.setContent(diary.getContent());
 					}

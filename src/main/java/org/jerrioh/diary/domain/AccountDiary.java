@@ -40,6 +40,9 @@ public class AccountDiary {
 	@Column(name = "content")
 	private String content;
 
+	@Column(name = "is_deleted")
+	private boolean isDeleted;
+
 	public String getAccountEmail() {
 		return accountEmail;
 	}
@@ -70,6 +73,14 @@ public class AccountDiary {
 
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 
 }

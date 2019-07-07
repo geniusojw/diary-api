@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS author_diary
   language VARCHAR(10) NOT NULL,
   country VARCHAR(10) NOT NULL,
   time_zone_id VARCHAR(30) NOT NULL,
+  is_deleted TINYINT NOT NULL COMMENT '0: not deleted, 1: deleted' DEFAULT 0,
   CONSTRAINT author_diary PRIMARY KEY (author_id, diary_date)
 );
 
@@ -80,6 +81,7 @@ CREATE TABLE IF NOT EXISTS account_diary
   diary_date VARCHAR(8) NOT NULL,
   title VARCHAR(80) NULL,
   content VARCHAR(3000) NULL,
+  is_deleted TINYINT NOT NULL COMMENT '0: not deleted, 1: deleted' DEFAULT 0,
   CONSTRAINT account_diary PRIMARY KEY (account_email, diary_date)
 );
 
@@ -93,6 +95,7 @@ CREATE TABLE IF NOT EXISTS letter
   to_author_nickname VARCHAR(50) NOT NULL COMMENT 'to author nickname at the time of writing',
   content VARCHAR(3000) NULL,
   written_time TIMESTAMP NULL DEFAULT now(),
+  is_deleted TINYINT NOT NULL COMMENT '0: not deleted, 1: deleted' DEFAULT 0,
   CONSTRAINT letter_pk PRIMARY KEY (letter_id)
 );
 
@@ -134,3 +137,9 @@ CREATE TABLE IF NOT EXISTS post
   CONSTRAINT post_pk PRIMARY KEY (post_id)
 );
 
+CREATE TABLE IF NOT EXISTS app
+(
+  version VARCHAR(100) NOT NULL,
+  app_status VARCHAR(100) NOT NULL COMMENT '0: stable, 1: need update',
+  CONSTRAINT app_pk PRIMARY KEY (version)
+);

@@ -16,6 +16,8 @@ import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Author;
 import org.jerrioh.diary.domain.AuthorDiary;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -60,6 +62,19 @@ public class AuthorDiaryController extends AbstractAuthorController {
 		
 		authorDiaryRepository.save(diary);
 		
+		return ApiResponse.make(OdResponseType.OK);
+	}
+
+	@DeleteMapping(value = "/{diaryDate}")
+	public ResponseEntity<ApiResponse<Object>> deleteDiary(@PathVariable(name = "diaryDate") String diaryDate) throws OdException {
+		Author author = super.getAuthor();
+		
+		AuthorDiary diary = authorDiaryRepository.findByAuthorIdAndDiaryDate(author.getAuthorId(), diaryDate);
+		if (diary == null || diary.isDeleted()) {
+			throw new OdException(OdResponseType.DIARY_NOT_FOUND);
+		}
+		diary.setDeleted(true);
+		authorDiaryRepository.save(diary);
 		return ApiResponse.make(OdResponseType.OK);
 	}
 }

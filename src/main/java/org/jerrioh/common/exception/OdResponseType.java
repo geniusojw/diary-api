@@ -17,6 +17,7 @@ public enum OdResponseType {
 	LETTER_NOT_FOUND(404, 3, "Letter Not Found"),
 	DIARY_GROUP_NOT_FOUND(404, 4, "Diary Group Not Found"),
 	POST_NOT_FOUND(404, 5, "Post Not Found"),
+	APP_NOT_FOUND(404, 6, "App Not Found"),
 	
 	CONFLICT(409, 0, "Conflict"),
 	USER_CONFLICT(409, 1, "User Already Exsits"),

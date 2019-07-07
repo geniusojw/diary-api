@@ -9,9 +9,9 @@ import javax.validation.Valid;
 
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
+import org.jerrioh.diary.controller.account.payload.AccountDiaryRequest;
 import org.jerrioh.diary.controller.account.payload.AccountDiaryResponse;
 import org.jerrioh.diary.controller.payload.ApiResponse;
-import org.jerrioh.diary.controller.account.payload.AccountDiaryRequest;
 import org.jerrioh.diary.domain.Account;
 import org.jerrioh.diary.domain.AccountDiary;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +51,10 @@ public class AccountDiaryController extends AbstractAccountController {
 		List<AccountDiary> diaries = accountDiaryRepository.findByAccountEmail(account.getAccountEmail());
 		List<AccountDiaryResponse> responses = new ArrayList<>();
 		for (AccountDiary diary : diaries) {
+			if (diary.isDeleted()) {
+				continue;
+			}
+			
 			AccountDiaryResponse response = new AccountDiaryResponse();
 			response.setDiaryDate(diary.getDiaryDate());
 			response.setTitle(diary.getTitle());
@@ -93,17 +97,6 @@ public class AccountDiaryController extends AbstractAccountController {
 		return ApiResponse.make(OdResponseType.OK);
 	}
 
-	@DeleteMapping(value = "/{diaryDate}")
-	public ResponseEntity<ApiResponse<Object>> delete(@PathVariable(name = "diaryDate") String diaryDate) throws OdException {
-		Account account = super.getAccount();
-		AccountDiary diary = accountDiaryRepository.findByAccountEmailAndDiaryDate(account.getAccountEmail(), diaryDate);
-		if (diary == null) {
-			throw new OdException(OdResponseType.DIARY_NOT_FOUND);
-		}
-		accountDiaryRepository.delete(diary);
-		return ApiResponse.make(OdResponseType.OK);
-	}
-
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/synchronize")
 	public ResponseEntity<ApiResponse<List<AccountDiaryResponse>>> synchronize(@RequestBody @Valid List<AccountDiaryRequest> requests) {
@@ -126,6 +119,9 @@ public class AccountDiaryController extends AbstractAccountController {
 		
 		List<AccountDiaryResponse> responses = new ArrayList<>();
 		for (AccountDiary diary : diaryMap.values()) {
+			if (diary.isDeleted()) {
+				continue;
+			}
 			AccountDiaryResponse response = new AccountDiaryResponse();
 			response.setDiaryDate(diary.getDiaryDate());
 			response.setTitle(diary.getTitle());
@@ -133,6 +129,19 @@ public class AccountDiaryController extends AbstractAccountController {
 			responses.add(response);
 		}
 		return ApiResponse.make(OdResponseType.OK, responses);
+	}
+
+	@DeleteMapping(value = "/{diaryDate}")
+	public ResponseEntity<ApiResponse<Object>> deleteDiary(@PathVariable(name = "diaryDate") String diaryDate) throws OdException {
+		Account account = super.getAccount();
+		
+		AccountDiary diary = accountDiaryRepository.findByAccountEmailAndDiaryDate(account.getAccountEmail(), diaryDate);
+		if (diary == null || diary.isDeleted()) {
+			throw new OdException(OdResponseType.DIARY_NOT_FOUND);
+		}
+		diary.setDeleted(true);
+		accountDiaryRepository.save(diary);
+		return ApiResponse.make(OdResponseType.OK);
 	}
 
 }

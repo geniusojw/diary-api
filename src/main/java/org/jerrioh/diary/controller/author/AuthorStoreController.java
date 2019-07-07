@@ -162,7 +162,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 			post.setAuthorId(author.getAuthorId());
 			post.setAuthorNickname(author.getNickname());
 			post.setChocolates(request.getPrice());
-			post.setContent(null);
+			post.setContent("");
 			post.setLanguage(null);
 			post.setCountry(null);
 			post.setTimeZoneId(null);

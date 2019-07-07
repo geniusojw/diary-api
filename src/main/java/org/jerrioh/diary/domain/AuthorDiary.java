@@ -49,6 +49,9 @@ public class AuthorDiary {
 	@Column(name = "time_zone_id")
 	private String timeZoneId;
 
+	@Column(name = "is_deleted")
+	private boolean isDeleted;
+
 	public String getAuthorId() {
 		return authorId;
 	}
@@ -103,5 +106,13 @@ public class AuthorDiary {
 
 	public void setTimeZoneId(String timeZoneId) {
 		this.timeZoneId = timeZoneId;
+	}
+
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 }

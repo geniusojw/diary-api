@@ -42,6 +42,9 @@ public class AuthorLetter {
 	@Column(name = "writtenTime")
 	private Timestamp writtenTime;
 
+	@Column(name = "is_deleted")
+	private boolean isDeleted;
+
 	public String getLetterId() {
 		return letterId;
 	}
@@ -104,5 +107,13 @@ public class AuthorLetter {
 
 	public void setWrittenTime(Timestamp writtenTime) {
 		this.writtenTime = writtenTime;
+	}
+
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 }
