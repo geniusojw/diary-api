@@ -83,7 +83,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 		PURCHASE_MUSIC				("ITEM_PURCHASE_MUSIC", 10),
 		DIARY_GROUP_INVITATION		("ITEM_DIARY_GROUP_INVITATION", 4),
 		DIARY_GROUP_SUPPORT			("ITEM_DIARY_GROUP_SUPPORT", 2),
-		CHOCOLATE_DONATION			("ITEM_CHOCOLATE_DONATION", 2),
+		CHOCOLATE_DONATION			("ITEM_CHOCOLATE_DONATION", 0),
 		;
 
 		private Item(String itemId, int price) {
@@ -412,8 +412,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 	@PostMapping(value = "/chocolate-donation")
 	public ResponseEntity<ApiResponse<Object>> chocolateDonation(@RequestBody @Valid ChocolateDonationRequest request,
 			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
-		return purchase(Item.CHOCOLATE_DONATION, timestamp, () -> {
-			// chocolate donation
+		return purchaseNoPrice(Item.CHOCOLATE_DONATION,  request.getChocolates(), timestamp, () -> {
 			
 			return ApiResponse.make(OdResponseType.OK);
 		});

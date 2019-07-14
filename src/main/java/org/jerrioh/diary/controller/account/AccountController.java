@@ -10,12 +10,15 @@ import org.jerrioh.common.util.EncodingUtil;
 import org.jerrioh.common.util.JwtUtil;
 import org.jerrioh.diary.controller.account.payload.AccountRequest;
 import org.jerrioh.diary.controller.account.payload.AccountResponse;
+import org.jerrioh.diary.controller.account.payload.ChangePasswordRequest;
+import org.jerrioh.diary.controller.account.payload.DeleteAccountRequest;
 import org.jerrioh.diary.controller.account.payload.FindPasswordRequest;
 import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Account;
 import org.jerrioh.security.authentication.before.AccountSigninToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/account")
 public class AccountController extends AbstractAccountController {
-	
+
+	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/sign-up")
 	public ResponseEntity<ApiResponse<AccountResponse>> signUp(@RequestBody @Valid AccountRequest request) throws OdException {
 		Account account = accountRepository.findByAccountEmail(request.getAccountEmail());
@@ -45,6 +49,7 @@ public class AccountController extends AbstractAccountController {
 		return ApiResponse.make(OdResponseType.OK, response);
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/sign-in")
 	public ResponseEntity<ApiResponse<AccountResponse>> signIn(@RequestBody @Valid AccountRequest request) {
 		Authentication preAuthentication = new AccountSigninToken(request.getAccountEmail(), request.getPassword());
@@ -59,6 +64,7 @@ public class AccountController extends AbstractAccountController {
 		return ApiResponse.make(OdResponseType.OK, response);
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/find-password")
 	public ResponseEntity<ApiResponse<Object>> findPassword(@RequestBody @Valid FindPasswordRequest request) throws OdException {
 		Account account = accountRepository.findByAccountEmail(request.getAccountEmail());
@@ -73,6 +79,19 @@ public class AccountController extends AbstractAccountController {
 		return ApiResponse.make(OdResponseType.OK);
 	}
 
+	@Transactional(rollbackFor = Exception.class)
+	@PostMapping(value = "/change-password")
+	public ResponseEntity<ApiResponse<Object>> changePassword(@RequestBody @Valid ChangePasswordRequest request) throws OdException {
+		Account account = super.getAccount();
+		authenticationManager.authenticate(new AccountSigninToken(account.getAccountEmail(), request.getOldPassword()));
+
+		// 이메일 발송, 발송실패 시 에러
+		account.setPasswordEnc(EncodingUtil.passwordEncode(request.getNewPassword()));
+		accountRepository.save(account);
+
+		return ApiResponse.make(OdResponseType.OK);
+	}
+
 	@PostMapping(value = "/refresh-token")
 	public ResponseEntity<ApiResponse<AccountResponse>> refreshToken() {
 		Account account = super.getAccount();
@@ -82,18 +101,19 @@ public class AccountController extends AbstractAccountController {
 		return ApiResponse.make(OdResponseType.OK, response);
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/delete")
-	public ResponseEntity<ApiResponse<Object>> deleteAccount(@RequestBody @Valid AccountRequest request) throws OdException {
+	public ResponseEntity<ApiResponse<Object>> deleteAccount(@RequestBody @Valid DeleteAccountRequest request) throws OdException {
 		Account account = super.getAccount();
 		
 		if (!StringUtils.equals(account.getAccountEmail(), request.getAccountEmail())) {
 			throw new OdException(OdResponseType.UNAUTHORIZED);
 		}
 		
-		Authentication preAuthentication = new AccountSigninToken(request.getAccountEmail(), request.getPassword());
-		authenticationManager.authenticate(preAuthentication);
+		authenticationManager.authenticate(new AccountSigninToken(request.getAccountEmail(), request.getPassword()));
 
 		accountRepository.delete(account);
+		accountDiaryRepository.deleteByAccountEmail(account.getAccountEmail());
 		
 		return ApiResponse.make(OdResponseType.OK);
 	}
