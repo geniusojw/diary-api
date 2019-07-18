@@ -47,13 +47,13 @@ public class AuthorDiaryController extends AbstractAuthorController {
 		super.getDateTimeZone(timeZoneId);
 		
 		AuthorDiary diary = authorDiaryRepository.findByAuthorIdAndDiaryDate(author.getAuthorId(), request.getDiaryDate());
-		if (diary != null) {
-			throw new OdException(OdResponseType.DIARY_CONFLICT);
+		if (diary == null) {
+			OdLogger.info("new author diary");
+			diary = new AuthorDiary();
+			diary.setAuthorId(author.getAuthorId());
+			diary.setDiaryDate(request.getDiaryDate());
 		}
 		
-		diary = new AuthorDiary();
-		diary.setAuthorId(author.getAuthorId());
-		diary.setDiaryDate(request.getDiaryDate());
 		diary.setTitle(request.getTitle());
 		diary.setContent(request.getContent());
 		diary.setLanguage(language);

@@ -3,9 +3,11 @@ package org.jerrioh.diary.controller.author.payload;
 public class AuthorDiaryGroupResponse {
 	private String authorId;
 	private String nickname;
-	private String title;
-	private String content;
-
+	private String yesterdayTitle;
+	private String yesterdayContent;
+	private String todayTitle;
+	private String todayContent;
+	
 	public String getAuthorId() {
 		return authorId;
 	}
@@ -18,16 +20,28 @@ public class AuthorDiaryGroupResponse {
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
 	}
-	public String getTitle() {
-		return title;
+	public String getYesterdayTitle() {
+		return yesterdayTitle;
 	}
-	public void setTitle(String title) {
-		this.title = title;
+	public void setYesterdayTitle(String yesterdayTitle) {
+		this.yesterdayTitle = yesterdayTitle;
 	}
-	public String getContent() {
-		return content;
+	public String getYesterdayContent() {
+		return yesterdayContent;
 	}
-	public void setContent(String content) {
-		this.content = content;
+	public void setYesterdayContent(String yesterdayContent) {
+		this.yesterdayContent = yesterdayContent;
+	}
+	public String getTodayTitle() {
+		return todayTitle;
+	}
+	public void setTodayTitle(String todayTitle) {
+		this.todayTitle = todayTitle;
+	}
+	public String getTodayContent() {
+		return todayContent;
+	}
+	public void setTodayContent(String todayContent) {
+		this.todayContent = todayContent;
 	}
 }

@@ -152,26 +152,41 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 		}
 		
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyyMMdd");
-		String yesterdayDate = DateTime.now(DateTimeZone.forID(diaryGroup.getTimeZoneId())).minusDays(1).toString(dateTimeFormatter);
+		DateTime today = DateTime.now(DateTimeZone.forID(diaryGroup.getTimeZoneId()));
+		DateTime yesterdayDate = today.minusDays(1);
+		String todayString = today.toString(dateTimeFormatter);
+		String yesterdayString = yesterdayDate.toString(dateTimeFormatter);
 		
 		// TODO one to many, many to one 적용 -> performance 개선
 		List<AuthorDiaryGroupResponse> responses = new ArrayList<>();
+		
 		List<DiaryGroupAuthor> diaryGroupAuthors = diaryGroupAuthorRepository.findByDiaryGroupId(diaryGroup.getDiaryGroupId());
 		for (DiaryGroupAuthor diaryGroupAuthor : diaryGroupAuthors) {
-			if (diaryGroupAuthor.getAuthorStatus() == AuthorStatus.ACCEPT) {
-				Author authorParticipated = authorRepository.findByAuthorId(diaryGroupAuthor.getAuthorId());
-				if (authorParticipated != null && !authorParticipated.isDeleted()) {
-					AuthorDiaryGroupResponse response = new AuthorDiaryGroupResponse();
-					response.setAuthorId(authorParticipated.getAuthorId());
-					response.setNickname(authorParticipated.getNickname());
-					AuthorDiary diary = authorDiaryRepository.findByAuthorIdAndDiaryDate(authorParticipated.getAuthorId(), yesterdayDate);
-					if (diary != null && !diary.isDeleted()) {
-						response.setTitle(diary.getTitle());
-						response.setContent(diary.getContent());
-					}
-					responses.add(response);
-				}
+			if (diaryGroupAuthor.getAuthorStatus() != AuthorStatus.ACCEPT) {
+				continue;
 			}
+			
+			Author authorParticipated = authorRepository.findByAuthorId(diaryGroupAuthor.getAuthorId());
+			if (authorParticipated == null || authorParticipated.isDeleted()) {
+				continue;
+			}
+
+			AuthorDiaryGroupResponse response = new AuthorDiaryGroupResponse();
+			response.setAuthorId(authorParticipated.getAuthorId());
+			response.setNickname(authorParticipated.getNickname());
+			
+			AuthorDiary todayDiary = authorDiaryRepository.findByAuthorIdAndDiaryDate(authorParticipated.getAuthorId(), todayString);
+			if (todayDiary != null && !todayDiary.isDeleted()) {
+				response.setTodayTitle(todayDiary.getTitle());
+				response.setTodayContent(todayDiary.getContent());
+			}
+			
+			AuthorDiary yesterdayDiary = authorDiaryRepository.findByAuthorIdAndDiaryDate(authorParticipated.getAuthorId(), yesterdayString);
+			if (yesterdayDiary != null && !yesterdayDiary.isDeleted()) {
+				response.setYesterdayTitle(yesterdayDiary.getTitle());
+				response.setYesterdayContent(yesterdayDiary.getContent());
+			}
+			responses.add(response);
 		}
 		
 		return ApiResponse.make(OdResponseType.OK, responses);
