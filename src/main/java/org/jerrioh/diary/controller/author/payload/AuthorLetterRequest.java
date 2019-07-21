@@ -5,6 +5,7 @@ import javax.validation.constraints.NotNull;
 public class AuthorLetterRequest {
 	@NotNull
 	private String letterId;
+	@NotNull
 	private String toAuthorId;
 	private String toAuthorNickname;
 	@NotNull

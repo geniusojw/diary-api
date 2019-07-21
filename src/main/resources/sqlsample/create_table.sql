@@ -137,6 +137,33 @@ CREATE TABLE IF NOT EXISTS post
   CONSTRAINT post_pk PRIMARY KEY (post_id)
 );
 
+CREATE TABLE IF NOT EXISTS feedback_diary
+(
+  from_author_id VARCHAR(255) NOT NULL,
+  to_author_id VARCHAR(255) NOT NULL,
+  diary_date VARCHAR(8) NOT NULL,
+  feedback_diary_type INT(11) NOT NULL COMMENT '0: good (yesterday), 1: like (today)',
+  CONSTRAINT feedback_diary_pk PRIMARY KEY (from_author_id, to_author_id, diary_date, feedback_diary_type)
+);
+
+CREATE TABLE IF NOT EXISTS feedback_author
+(
+  from_author_id VARCHAR(255) NOT NULL,
+  to_author_id VARCHAR(255) NOT NULL,
+  diary_group_id BIGINT NOT NULL,
+  feedback_author_type INT(11) NOT NULL COMMENT '0: write, 1 over: fixed various types',
+  feedback_author_write VARCHAR(50) NULL COMMENT 'not null when type is 0',
+  CONSTRAINT feedback_author_pk PRIMARY KEY (from_author_id, to_author_id, feedback_author_type)
+);
+
+
+--CREATE TABLE IF NOT EXISTS about
+--(
+--  about_type INT(11) NOT NULL,
+--  about_description VARCHAR(255) NOT NULL,
+--  CONSTRAINT author_feedback_pk PRIMARY KEY (about_type)
+--);
+
 CREATE TABLE IF NOT EXISTS app
 (
   version VARCHAR(100) NOT NULL,

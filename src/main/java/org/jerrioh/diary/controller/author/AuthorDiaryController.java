@@ -1,12 +1,7 @@
 package org.jerrioh.diary.controller.author;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-
 import javax.validation.Valid;
 
-import org.jerrioh.common.exception.OdAuthenticationException;
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
 import org.jerrioh.common.util.OdLogger;
@@ -35,15 +30,7 @@ public class AuthorDiaryController extends AbstractAuthorController {
 			@RequestHeader(value = OdHeaders.TIME_ZONE_ID) String timeZoneId) throws OdException {
 		Author author = super.getAuthor();
 		
-		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-		int minimumPermit = Integer.parseInt(ZonedDateTime.now(ZoneOffset.MIN).format(dateTimeFormatter));
-		int maximumPermit = Integer.parseInt(ZonedDateTime.now(ZoneOffset.MAX).format(dateTimeFormatter));
-		int diaryDateInteger = Integer.parseInt(request.getDiaryDate());
-		if (diaryDateInteger < minimumPermit || maximumPermit < diaryDateInteger) {
-			OdLogger.info("invalid diaryDate. diaryDate = {} ", request.getDiaryDate());
-			throw new OdAuthenticationException();
-		}
-		
+		super.checkInvalidDate(request.getDiaryDate(), 0L);
 		super.getDateTimeZone(timeZoneId);
 		
 		AuthorDiary diary = authorDiaryRepository.findByAuthorIdAndDiaryDate(author.getAuthorId(), request.getDiaryDate());

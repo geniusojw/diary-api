@@ -425,6 +425,9 @@ public class AuthorStoreController extends AbstractAuthorController {
 	
 	private <R> ResponseEntity<ApiResponse<R>> purchaseNoPrice(Item item, int price, Long timestamp, Purchaser<R> purchaser) throws OdException {
 		Author author = super.getAuthor();
+		if (price < 0) {
+			throw new OdException(OdResponseType.BAD_REQUEST);
+		}
 		
 		Long previousTimestamp = authorTimestamps.get(author.getAuthorId());
 		if (previousTimestamp != null && previousTimestamp.compareTo(timestamp) == 0) {

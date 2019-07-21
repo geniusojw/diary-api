@@ -24,6 +24,7 @@ public enum OdResponseType {
 	DIARY_CONFLICT(409, 2, "Diary Already Exsits"),
 	LETTER_CONFLICT(409, 3, "Letter Already Exsits"),
 	DIARY_GROUP_CONFLICT(409, 4, "Diary Group Already Exsits"),
+	FEEDBACK_CONFLICT(409, 5, "Feedback Already Exsits"),
 	
 	PRECONDITION_FAILED(412, 0, "Precondition Failed"),
 	

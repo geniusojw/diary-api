@@ -43,19 +43,17 @@ public class AuthorLetterController extends AbstractAuthorController {
 			throw new OdException(OdResponseType.LETTER_CONFLICT);
 		}
 		
-		Author toAuthor;
-		if (StringUtils.isNotEmpty(request.getToAuthorId())) {
-			// 일반 편지 발송. 발신인이 있는 경우
-			toAuthor = authorRepository.findByAuthorId(request.getToAuthorId());
-		} else {
-			// 랜덤 편지 발송. 발신인이 없는 경우.
-			// 같은 언어, 국가, 타임존이 확인된 사람. 7일동안 2번이상 일기를 쓴 사람에게.
-			super.getDateTimeZone(timeZoneId);
-			toAuthor = authorRepository.findRandomAuthor(author.getAuthorId(), language, country, timeZoneId);
-		}
+		Author toAuthor = authorRepository.findByAuthorId(request.getToAuthorId());
+		
+//		// 랜덤 편지 발송. 발신인이 없는 경우.
+//		// 같은 언어, 국가, 타임존이 확인된 사람. 7일동안 2번이상 일기를 쓴 사람에게.
+//		super.getDateTimeZone(timeZoneId);
+//		toAuthor = authorRepository.findRandomAuthor(author.getAuthorId(), language, country, timeZoneId);
+			
 		if (toAuthor == null) {
 			throw new OdException(OdResponseType.USER_NOT_FOUND);
 		}
+		
 		String toAuthorId = toAuthor.getAuthorId();
 		String toAuthorNickname = StringUtils.defaultIfEmpty(request.getToAuthorNickname(), toAuthor.getNickname());
 		

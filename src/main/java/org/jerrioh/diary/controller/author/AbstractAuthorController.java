@@ -1,8 +1,12 @@
 package org.jerrioh.diary.controller.author;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jerrioh.common.OdMessageSource;
 import org.jerrioh.common.exception.OdAuthenticationException;
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
@@ -10,14 +14,18 @@ import org.jerrioh.common.util.OdLogger;
 import org.jerrioh.common.util.StringUtil;
 import org.jerrioh.diary.controller.AbstractController;
 import org.jerrioh.diary.domain.Author;
+import org.jerrioh.diary.domain.DiaryGroup;
 import org.jerrioh.diary.domain.repo.AuthorAnalyzedRepository;
 import org.jerrioh.diary.domain.repo.AuthorDiaryRepository;
 import org.jerrioh.diary.domain.repo.AuthorLetterRepository;
 import org.jerrioh.diary.domain.repo.AuthorRepository;
 import org.jerrioh.diary.domain.repo.DiaryGroupAuthorRepository;
 import org.jerrioh.diary.domain.repo.DiaryGroupRepository;
+import org.jerrioh.diary.domain.repo.FeedbackAuthorRepository;
+import org.jerrioh.diary.domain.repo.FeedbackDiaryRepository;
 import org.jerrioh.diary.domain.repo.PostRepository;
 import org.jerrioh.security.authentication.after.CompleteAuthorToken;
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -37,7 +45,13 @@ public abstract class AbstractAuthorController extends AbstractController {
 	@Autowired
 	protected DiaryGroupAuthorRepository diaryGroupAuthorRepository;
 	@Autowired
+	protected FeedbackDiaryRepository feedbackDiaryRepository;
+	@Autowired
+	protected FeedbackAuthorRepository  feedbackAuthorRepository;
+	@Autowired
 	protected PostRepository postRepository;
+	@Autowired
+	protected OdMessageSource messageSource;
 
 	protected Author getAuthor() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -45,6 +59,23 @@ public abstract class AbstractAuthorController extends AbstractController {
 			return (Author) authentication.getPrincipal();
 		}
 		throw new OdAuthenticationException();		
+	}
+
+	protected void checkInvalidDate(String diaryDate, long dayOffset) {
+		ZonedDateTime minGmtDate = ZonedDateTime.now(ZoneOffset.MIN);
+		ZonedDateTime maxGmtDate = ZonedDateTime.now(ZoneOffset.MAX);
+		
+		minGmtDate = minGmtDate.plusDays(dayOffset);
+		maxGmtDate = maxGmtDate.plusDays(dayOffset);
+		
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+		int minimumPermit = Integer.parseInt(minGmtDate.format(dateTimeFormatter));
+		int maximumPermit = Integer.parseInt(maxGmtDate.format(dateTimeFormatter));
+		int diaryDateInteger = Integer.parseInt(diaryDate);
+		if (diaryDateInteger < minimumPermit || maximumPermit < diaryDateInteger) {
+			OdLogger.info("invalid diaryDate. diaryDate = {} ", diaryDate);
+			throw new OdAuthenticationException();
+		}
 	}
 
 	protected DateTimeZone getDateTimeZone(String timeZoneId) throws OdException {
@@ -55,6 +86,22 @@ public abstract class AbstractAuthorController extends AbstractController {
 			throw new OdException(OdResponseType.BAD_REQUEST);
 		}
 	}
+
+	protected DiaryGroup getStartedDiaryGroup(Author author) throws OdException {
+		DiaryGroup diaryGroup = diaryGroupRepository.findAcceptedByAuthorId(author.getAuthorId());
+		if (diaryGroup == null) {
+			throw new OdException(OdResponseType.DIARY_GROUP_NOT_FOUND);
+		}
+		
+		DateTime startDateTime = new DateTime(diaryGroup.getStartTime());
+		DateTime now = DateTime.now();
+		if (startDateTime.compareTo(now) > 0) { // 시작 전
+			OdLogger.info("Diary group is not started. startDateTime = {}, now = {}", startDateTime, now);
+			throw new OdException(OdResponseType.PRECONDITION_FAILED);
+		}
+		return diaryGroup;
+	}
+	
 
 	protected String generateAuthorCode() {
 		String authorCode = RandomStringUtils.randomAlphanumeric(16); // 16자리 코드
