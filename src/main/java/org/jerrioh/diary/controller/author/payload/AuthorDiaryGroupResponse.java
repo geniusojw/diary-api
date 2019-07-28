@@ -1,9 +1,11 @@
 package org.jerrioh.diary.controller.author.payload;
 
 public class AuthorDiaryGroupResponse {
+	
 	private String authorId;
 	private String nickname;
 	private boolean firstDay;
+	private boolean lastDay;
 	private String yesterdayDate;
 	private String yesterdayTitle;
 	private String yesterdayContent;
@@ -28,6 +30,12 @@ public class AuthorDiaryGroupResponse {
 	}
 	public void setFirstDay(boolean firstDay) {
 		this.firstDay = firstDay;
+	}
+	public boolean isLastDay() {
+		return lastDay;
+	}
+	public void setLastDay(boolean lastDay) {
+		this.lastDay = lastDay;
 	}
 	public String getYesterdayDate() {
 		return yesterdayDate;

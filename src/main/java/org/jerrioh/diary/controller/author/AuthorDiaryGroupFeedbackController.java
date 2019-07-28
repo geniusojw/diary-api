@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
 import org.jerrioh.diary.controller.author.payload.FeedbackAuthorRequest;
+import org.jerrioh.diary.controller.author.payload.FeedbackAuthorTypeRequest;
 import org.jerrioh.diary.controller.author.payload.FeedbackDiaryRequest;
 import org.jerrioh.diary.controller.author.payload.GetFeedbackTypeResponse;
 import org.jerrioh.diary.controller.payload.ApiResponse;
@@ -20,7 +21,6 @@ import org.jerrioh.diary.domain.FeedbackAuthor;
 import org.jerrioh.diary.domain.FeedbackDiary;
 import org.jerrioh.diary.domain.FeedbackDiary.FeedbackDiaryType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,33 +33,57 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 	private static final Random RANDOM = new Random();
 	private static final int TOTAL_TYPE_COUNT = 30;
 	
-	@GetMapping("/types")
-	public ResponseEntity<ApiResponse<GetFeedbackTypeResponse>> getRandomFeebackTypes() throws OdException {
+	@PostMapping("/author/types")
+	public ResponseEntity<ApiResponse<GetFeedbackTypeResponse>> getRandomFeebackTypes(
+			@RequestBody @Valid FeedbackAuthorTypeRequest request) throws OdException {
 		Author author = super.getAuthor();
 		DiaryGroup diaryGroup = super.getStartedDiaryGroup(author);
+
+		this.checkToAuthorId(author.getAuthorId(), request.getToAuthorId(), diaryGroup.getDiaryGroupId());
 		
-		List<Integer> aboutTypes = new ArrayList<>();
-		int tryCount = 0;
-		while (aboutTypes.size() < 3 && tryCount < 50) {
-			int randomAboutType = RANDOM.nextInt(TOTAL_TYPE_COUNT);
-			if (!aboutTypes.contains(randomAboutType)) {
-				aboutTypes.add(randomAboutType);
-			}
-			tryCount++;
+		FeedbackAuthor feedback = feedbackAuthorRepository.findByFromAuthorIdAndToAuthorIdAndDiaryGroupId(
+				author.getAuthorId(), request.getToAuthorId(), diaryGroup.getDiaryGroupId());
+		
+		if (feedback != null) {
+			throw new OdException(OdResponseType.FEEDBACK_CONFLICT);
 		}
-		if (aboutTypes.size() != 3) {
-			throw new OdException(OdResponseType.INTERNAL_SERVER_ERROR);
-		}
+		
+		List<Integer> aboutTypes = this.getRandomAuthorTypes();
 
 		GetFeedbackTypeResponse response = new GetFeedbackTypeResponse();
-		response.setAboutType0(aboutTypes.get(0));
-		response.setAboutType1(aboutTypes.get(1));
-		response.setAboutType2(aboutTypes.get(2));
+		response.setAuthorType0(aboutTypes.get(0));
+		response.setAuthorType1(aboutTypes.get(1));
+		response.setAuthorType2(aboutTypes.get(2));
 		
-		response.setAboutDescription0(messageSource.getMessage("about.type" + aboutTypes.get(0), diaryGroup.getLanguage()));
-		response.setAboutDescription1(messageSource.getMessage("about.type" + aboutTypes.get(1), diaryGroup.getLanguage()));
-		response.setAboutDescription2(messageSource.getMessage("about.type" + aboutTypes.get(2), diaryGroup.getLanguage()));
+		response.setAuthorTypeDescription0("description" + aboutTypes.get(0));
+		response.setAuthorTypeDescription1("description" + aboutTypes.get(1));
+		response.setAuthorTypeDescription2("description" + aboutTypes.get(2));
 		return ApiResponse.make(OdResponseType.OK, response);
+	}
+	
+	@PostMapping(value = "/author")
+	public ResponseEntity<ApiResponse<Object>> feedbackAuthor(@RequestBody @Valid FeedbackAuthorRequest request) throws OdException {
+		Author author = super.getAuthor();
+		DiaryGroup diaryGroup = super.getStartedDiaryGroup(author);
+
+		this.checkToAuthorId(author.getAuthorId(), request.getToAuthorId(), diaryGroup.getDiaryGroupId());
+		
+		FeedbackAuthor feedback = feedbackAuthorRepository.findByFromAuthorIdAndToAuthorIdAndDiaryGroupId(
+				author.getAuthorId(), request.getToAuthorId(), diaryGroup.getDiaryGroupId());
+		
+		if (feedback != null) {
+			throw new OdException(OdResponseType.FEEDBACK_CONFLICT);
+		}
+		
+		feedback = new FeedbackAuthor();
+		feedback.setFromAuthorId(author.getAuthorId());
+		feedback.setToAuthorId(request.getToAuthorId());
+		feedback.setDiaryGroupId(diaryGroup.getDiaryGroupId());
+		feedback.setFeedbackAuthorType(request.getFeedbackAuthorType());
+		feedback.setFeedbackAuthorWrite(request.getFeedbackAuthorWrite());
+		feedbackAuthorRepository.save(feedback);
+		
+		return ApiResponse.make(OdResponseType.OK);
 	}
 	
 	@PostMapping(value = "/diary")
@@ -91,31 +115,6 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 		
 		return ApiResponse.make(OdResponseType.OK);
 	}
-	
-	@PostMapping(value = "/author")
-	public ResponseEntity<ApiResponse<Object>> feedbackAuthor(@RequestBody @Valid FeedbackAuthorRequest request) throws OdException {
-		Author author = super.getAuthor();
-		DiaryGroup diaryGroup = super.getStartedDiaryGroup(author);
-
-		this.checkToAuthorId(author.getAuthorId(), request.getToAuthorId(), diaryGroup.getDiaryGroupId());
-		
-		FeedbackAuthor feedback = feedbackAuthorRepository.findByFromAuthorIdAndToAuthorIdAndDiaryGroupId(
-				author.getAuthorId(), request.getToAuthorId(), diaryGroup.getDiaryGroupId());
-		
-		if (feedback != null) {
-			throw new OdException(OdResponseType.FEEDBACK_CONFLICT);
-		}
-		
-		feedback = new FeedbackAuthor();
-		feedback.setFromAuthorId(author.getAuthorId());
-		feedback.setToAuthorId(request.getToAuthorId());
-		feedback.setDiaryGroupId(diaryGroup.getDiaryGroupId());
-		feedback.setFeedbackAuthorType(request.getFeedbackAuthorType());
-		feedback.setFeedbackAuthorWrite(request.getFeedbackAuthorWrite());
-		feedbackAuthorRepository.save(feedback);
-		
-		return ApiResponse.make(OdResponseType.OK);
-	}
 
 	private void checkToAuthorId(String fromAuthorId, String toAuthorId, Long diaryGroupId) throws OdException {
 		if (fromAuthorId.equals(toAuthorId)) {
@@ -126,5 +125,21 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 		if (!diaryGroupAuthors.stream().map(DiaryGroupAuthor::getAuthorId).collect(Collectors.toSet()).contains(toAuthorId)) {
 			throw new OdException(OdResponseType.USER_NOT_FOUND);
 		}
+	}
+
+	private List<Integer> getRandomAuthorTypes() throws OdException {
+		List<Integer> authorTypes = new ArrayList<>();
+		int tryCount = 0;
+		while (authorTypes.size() < 3 && tryCount < 50) {
+			int randomAboutType = RANDOM.nextInt(TOTAL_TYPE_COUNT) + 1; // 1 ~ MAX
+			if (!authorTypes.contains(randomAboutType)) {
+				authorTypes.add(randomAboutType);
+			}
+			tryCount++;
+		}
+		if (authorTypes.size() != 3) {
+			throw new OdException(OdResponseType.INTERNAL_SERVER_ERROR);
+		}
+		return authorTypes;
 	}
 }

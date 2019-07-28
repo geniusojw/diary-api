@@ -1,5 +1,8 @@
 package org.jerrioh.diary.controller.account;
 
+import java.io.UnsupportedEncodingException;
+
+import javax.mail.MessagingException;
 import javax.validation.Valid;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -8,6 +11,9 @@ import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
 import org.jerrioh.common.util.EncodingUtil;
 import org.jerrioh.common.util.JwtUtil;
+import org.jerrioh.common.util.MailUtil;
+import org.jerrioh.common.util.OdLogger;
+import org.jerrioh.diary.controller.OdHeaders;
 import org.jerrioh.diary.controller.account.payload.AccountRequest;
 import org.jerrioh.diary.controller.account.payload.AccountResponse;
 import org.jerrioh.diary.controller.account.payload.ChangePasswordRequest;
@@ -21,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -66,14 +73,26 @@ public class AccountController extends AbstractAccountController {
 
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/find-password")
-	public ResponseEntity<ApiResponse<Object>> findPassword(@RequestBody @Valid FindPasswordRequest request) throws OdException {
+	public ResponseEntity<ApiResponse<Object>> findPassword(@RequestBody @Valid FindPasswordRequest request,
+			@RequestHeader(value = OdHeaders.LANGUAGE) String language) throws OdException {
 		Account account = accountRepository.findByAccountEmail(request.getAccountEmail());
 		if (account == null) {
 			throw new OdException(OdResponseType.USER_NOT_FOUND);
 		}
 
 		// 이메일 발송, 발송실패 시 에러
-		account.setPasswordEnc(EncodingUtil.passwordEncode(generateRandomPassword()));
+		String generatedPassword = generateRandomPassword();
+		try {
+			String subject = messageSource.getMessage("account.findpassword.subject", language);
+			String text = messageSource.getMessage("account.findpassword.text", language, generatedPassword);
+			
+			MailUtil.sendmail("jerrioh@naver.com", subject, text);
+		} catch (MessagingException | UnsupportedEncodingException e) {
+			OdLogger.error("sendMail fail", e);
+			throw new OdException(OdResponseType.INTERNAL_SERVER_ERROR);
+		}
+		
+		account.setPasswordEnc(EncodingUtil.passwordEncode(generatedPassword));
 		accountRepository.save(account);
 
 		return ApiResponse.make(OdResponseType.OK);
@@ -84,6 +103,11 @@ public class AccountController extends AbstractAccountController {
 	public ResponseEntity<ApiResponse<Object>> changePassword(@RequestBody @Valid ChangePasswordRequest request) throws OdException {
 		Account account = super.getAccount();
 		authenticationManager.authenticate(new AccountSigninToken(account.getAccountEmail(), request.getOldPassword()));
+		
+		if (!isValidPassword(request.getNewPassword())) {
+			OdLogger.error("invalid password = {}", request.getNewPassword());
+			throw new OdException(OdResponseType.PRECONDITION_FAILED);
+		}
 
 		// 이메일 발송, 발송실패 시 에러
 		account.setPasswordEnc(EncodingUtil.passwordEncode(request.getNewPassword()));
@@ -119,6 +143,10 @@ public class AccountController extends AbstractAccountController {
 	}
 
 	private String generateRandomPassword() {
-		return RandomStringUtils.randomAlphanumeric(8);
+		return RandomStringUtils.randomAlphanumeric(8).toUpperCase();
+	}
+	
+	private boolean isValidPassword(String password) {
+		return password.length() < 6;
 	}
 }

@@ -164,11 +164,15 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyyMMdd");
 		DateTime today = DateTime.now(DateTimeZone.forID(diaryGroup.getTimeZoneId()));
 		DateTime yesterdayDate = today.minusDays(1);
+		
 		String todayString = today.toString(dateTimeFormatter);
 		String yesterdayString = yesterdayDate.toString(dateTimeFormatter);
 		
 		String firstDayString = new DateTime(diaryGroup.getStartTime()).withZone(DateTimeZone.forID(diaryGroup.getTimeZoneId())).toString(dateTimeFormatter);
-		boolean isFirstDay = firstDayString.contentEquals(todayString);
+		String lastDayString = new DateTime(diaryGroup.getEndTime()).withZone(DateTimeZone.forID(diaryGroup.getTimeZoneId())).minusMinutes(1).toString(dateTimeFormatter);
+		
+		boolean isFirstDay = firstDayString.equals(todayString);
+		boolean isLastDay = lastDayString.equals(todayString);
 		
 		// TODO one to many, many to one 적용 -> performance 개선
 		List<AuthorDiaryGroupResponse> responses = new ArrayList<>();
@@ -188,6 +192,7 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 			response.setAuthorId(authorParticipated.getAuthorId());
 			response.setNickname(authorParticipated.getNickname());
 			response.setFirstDay(isFirstDay);
+			response.setLastDay(isLastDay);
 			
 			AuthorDiary todayDiary = authorDiaryRepository.findByAuthorIdAndDiaryDate(authorParticipated.getAuthorId(), todayString);
 			if (todayDiary != null && !todayDiary.isDeleted()) {

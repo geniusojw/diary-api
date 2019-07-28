@@ -1,47 +1,47 @@
 package org.jerrioh.diary.controller.author.payload;
 
 public class GetFeedbackTypeResponse {
-	private int aboutType0;
-	private int aboutType1;
-	private int aboutType2;
-	private String aboutDescription0;
-	private String aboutDescription1;
-	private String aboutDescription2;
-
-	public int getAboutType0() {
-		return aboutType0;
+	private int authorType0;
+	private int authorType1;
+	private int authorType2;
+	private String authorTypeDescription0;
+	private String authorTypeDescription1;
+	private String authorTypeDescription2;
+	
+	public int getAuthorType0() {
+		return authorType0;
 	}
-	public void setAboutType0(int aboutType0) {
-		this.aboutType0 = aboutType0;
+	public void setAuthorType0(int authorType0) {
+		this.authorType0 = authorType0;
 	}
-	public int getAboutType1() {
-		return aboutType1;
+	public int getAuthorType1() {
+		return authorType1;
 	}
-	public void setAboutType1(int aboutType1) {
-		this.aboutType1 = aboutType1;
+	public void setAuthorType1(int authorType1) {
+		this.authorType1 = authorType1;
 	}
-	public int getAboutType2() {
-		return aboutType2;
+	public int getAuthorType2() {
+		return authorType2;
 	}
-	public void setAboutType2(int aboutType2) {
-		this.aboutType2 = aboutType2;
+	public void setAuthorType2(int authorType2) {
+		this.authorType2 = authorType2;
 	}
-	public String getAboutDescription0() {
-		return aboutDescription0;
+	public String getAuthorTypeDescription0() {
+		return authorTypeDescription0;
 	}
-	public void setAboutDescription0(String aboutDescription0) {
-		this.aboutDescription0 = aboutDescription0;
+	public void setAuthorTypeDescription0(String authorTypeDescription0) {
+		this.authorTypeDescription0 = authorTypeDescription0;
 	}
-	public String getAboutDescription1() {
-		return aboutDescription1;
+	public String getAuthorTypeDescription1() {
+		return authorTypeDescription1;
 	}
-	public void setAboutDescription1(String aboutDescription1) {
-		this.aboutDescription1 = aboutDescription1;
+	public void setAuthorTypeDescription1(String authorTypeDescription1) {
+		this.authorTypeDescription1 = authorTypeDescription1;
 	}
-	public String getAboutDescription2() {
-		return aboutDescription2;
+	public String getAuthorTypeDescription2() {
+		return authorTypeDescription2;
 	}
-	public void setAboutDescription2(String aboutDescription2) {
-		this.aboutDescription2 = aboutDescription2;
+	public void setAuthorTypeDescription2(String authorTypeDescription2) {
+		this.authorTypeDescription2 = authorTypeDescription2;
 	}
 }

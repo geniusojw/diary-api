@@ -1,14 +1,19 @@
 package org.jerrioh.diary.controller.account;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.mail.MessagingException;
 import javax.validation.Valid;
 
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
+import org.jerrioh.common.util.MailUtil;
+import org.jerrioh.common.util.OdLogger;
+import org.jerrioh.diary.controller.OdHeaders;
 import org.jerrioh.diary.controller.account.payload.AccountDiaryRequest;
 import org.jerrioh.diary.controller.account.payload.AccountDiaryResponse;
 import org.jerrioh.diary.controller.payload.ApiResponse;
@@ -22,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -129,6 +135,45 @@ public class AccountDiaryController extends AbstractAccountController {
 			responses.add(response);
 		}
 		return ApiResponse.make(OdResponseType.OK, responses);
+	}
+
+	@PostMapping(value = "/export")
+	public ResponseEntity<ApiResponse<Object>> exportDiaries(
+			@RequestHeader(value = OdHeaders.LANGUAGE) String language) throws OdException {
+		Account account = super.getAccount();
+		
+		List<AccountDiary> diaries = accountDiaryRepository.findByAccountEmail(account.getAccountEmail());
+		if (diaries.isEmpty()) {
+			throw new OdException(OdResponseType.DIARY_NOT_FOUND);
+		}
+		
+		String date = messageSource.getMessage("account.emailexport.date", language) + ": ";
+		String title = messageSource.getMessage("account.emailexport.title", language) + ": ";
+		String line = "--------------------------------------------------------------------------------";
+		
+		StringBuilder diaryBuilder = new StringBuilder();
+		for (AccountDiary diary : diaries) {
+			String dateStringDotAdded = diary.getDiaryDate().substring(0, 4)
+					+ "." + diary.getDiaryDate().substring(4, 6)
+					+ "." + diary.getDiaryDate().substring(6, 8);
+			
+			diaryBuilder.append(date + dateStringDotAdded + "\n");
+			diaryBuilder.append(title + diary.getTitle() + "\n");
+			diaryBuilder.append(diary.getContent() + "\n\n" + line + "\n\n");
+		}
+
+		String subject = messageSource.getMessage("account.emailexport.subject", language);
+		String text = diaryBuilder.toString();
+		
+		try {
+			MailUtil.sendmail(account.getAccountEmail(), subject, text);
+		} catch (UnsupportedEncodingException | MessagingException e) {
+			OdLogger.error("sendMail fail", e);
+			throw new OdException(OdResponseType.INTERNAL_SERVER_ERROR);
+		}
+		
+		
+		return ApiResponse.make(OdResponseType.OK);
 	}
 
 	@DeleteMapping(value = "/{diaryDate}")
