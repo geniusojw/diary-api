@@ -56,7 +56,7 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 		}
 		
 		List<DiaryGroupAuthor> diaryGroupAuthors = diaryGroupAuthorRepository.findByDiaryGroupId(diaryGroup.getDiaryGroupId());
-		int currentAuthorCount = diaryGroupAuthors.size();
+		int currentAuthorCount = (int) diaryGroupAuthors.stream().filter(a -> a.getAuthorStatus() == AuthorStatus.ACCEPT).count();
 
 		DiaryGroupResponse response = new DiaryGroupResponse();
 		response.setDiaryGroupId(diaryGroup.getDiaryGroupId());
@@ -216,25 +216,13 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 	}
 
 	private void beInvitedAndReceiveLetter(Author author, DiaryGroup diaryGroup) {
-		DateTimeFormatter dateTimeFormatter = DateTimeFormat.fullDateTime().withZone(DateTimeZone.forID(diaryGroup.getTimeZoneId()));
+		Locale locale = "kor".equals(diaryGroup.getLanguage()) ? Locale.KOREA : Locale.US;
+		DateTimeFormatter dateTimeFormatter = DateTimeFormat.longDateTime().withZone(DateTimeZone.forID(diaryGroup.getTimeZoneId())).withLocale(locale);
+		
 		long durationDays = (diaryGroup.getEndTime().getTime() - diaryGroup.getStartTime().getTime()) / TimeUnit.DAYS.toMillis(1);
-		
-		String letterContent;
-		
-		if ("kor".equals(diaryGroup.getLanguage())) {
-			dateTimeFormatter = dateTimeFormatter.withLocale(Locale.KOREA);
-			String startTime = dateTimeFormatter.print(diaryGroup.getStartTime().getTime());
-			String endTime = dateTimeFormatter.print(diaryGroup.getEndTime().getTime());
-			
-			letterContent = "당신은 초대당했다.\n수락할 경우 " + durationDays + "일 간의 그룹일기에 참여하게 됩니다. 그룹일기는 특정키워드가 주어지며... blah blah.. " + startTime + " ~ " + endTime;
-			
-		} else {
-			dateTimeFormatter = dateTimeFormatter.withLocale(Locale.US);
-			String startTime = dateTimeFormatter.print(diaryGroup.getStartTime().getTime());
-			String endTime = dateTimeFormatter.print(diaryGroup.getEndTime().getTime());
-			
-			letterContent = "You are invited.\nIf 수락, " + durationDays + "일 간의 그룹일기에 참여하게 됩니다. 그룹일기는 특정키워드가 주어지며... blah blah.." + startTime + " ~ " + endTime;
-		}
+		String startTime = dateTimeFormatter.print(diaryGroup.getStartTime().getTime());
+		String endTime = dateTimeFormatter.print(diaryGroup.getEndTime().getTime());
+		String letterContent = messageSource.getMessage("diarygroup.letter.content", diaryGroup.getLanguage(), durationDays, startTime, endTime);
 
 		long currentTime = System.currentTimeMillis();
 

@@ -23,6 +23,7 @@ import org.jerrioh.diary.controller.author.payload.BuyPostItRequest;
 import org.jerrioh.diary.controller.author.payload.ChangeDescriptionResponse;
 import org.jerrioh.diary.controller.author.payload.ChangeNicknameResponse;
 import org.jerrioh.diary.controller.author.payload.ChocolateDonationRequest;
+import org.jerrioh.diary.controller.author.payload.ChocolateDonationResponse;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupCreateRequest;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupResponse;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupSupportRequest;
@@ -82,7 +83,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 		PURCHASE_THEME				("ITEM_PURCHASE_THEME", 10),
 		PURCHASE_MUSIC				("ITEM_PURCHASE_MUSIC", 10),
 		DIARY_GROUP_INVITATION		("ITEM_DIARY_GROUP_INVITATION", 4),
-		DIARY_GROUP_SUPPORT			("ITEM_DIARY_GROUP_SUPPORT", 2),
+		DIARY_GROUP_SUPPORT			("ITEM_DIARY_GROUP_SUPPORT", 3),
 		CHOCOLATE_DONATION			("ITEM_CHOCOLATE_DONATION", 0),
 		;
 
@@ -202,7 +203,8 @@ public class AuthorStoreController extends AbstractAuthorController {
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/change-nickname")
 	public ResponseEntity<ApiResponse<ChangeNicknameResponse>> changeNickname(
-			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp,
+			@RequestHeader(value = OdHeaders.LANGUAGE) String language) throws OdException {
 		return purchase(Item.CHANGE_NICKNAME, timestamp, () -> {
 			Author author = super.getAuthor();
 			if (authorRepository.nickNameChangable(author.getAuthorId(), DESCRIPTION_AND_NICKNAME_CHANGE_HOURS) == 0) {
@@ -210,7 +212,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 				throw new OdException(OdResponseType.PRECONDITION_FAILED);
 			}
 
-			String nickname = generateNickName();
+			String nickname = generateNickname(language);
 			author.setNickname(nickname);
 			
 			authorRepository.save(author);
@@ -230,6 +232,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 			// select random theme
 			String themeName;
 			String[] patterns = new String[4];
+			String bannerColor;
 			try {
 				ClassPathResource classPathResource = new ClassPathResource("diary-theme");
 				File[] themeDirectories = classPathResource.getFile().listFiles();
@@ -243,6 +246,9 @@ public class AuthorStoreController extends AbstractAuthorController {
 					byte[] bytes = Files.readAllBytes(imageFile.toPath());
 					patterns[index] = new String(Base64.getEncoder().encode(bytes));
 				}
+				File textFile = new File(randomThemeDirectory.getPath() + "\\banner");
+				byte[] textBytes = Files.readAllBytes(textFile.toPath());
+				bannerColor = new String(textBytes);
 				
 			} catch (IOException e) {
 				System.out.println(e.toString());
@@ -255,6 +261,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 			response.setPattern1(patterns[1]);
 			response.setPattern2(patterns[2]);
 			response.setPattern3(patterns[3]);
+			response.setBannerColor(bannerColor);
 			return ApiResponse.make(OdResponseType.OK, response);
 		});
 	}
@@ -410,11 +417,15 @@ public class AuthorStoreController extends AbstractAuthorController {
 
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/chocolate-donation")
-	public ResponseEntity<ApiResponse<Object>> chocolateDonation(@RequestBody @Valid ChocolateDonationRequest request,
+	public ResponseEntity<ApiResponse<ChocolateDonationResponse>> chocolateDonation(@RequestBody @Valid ChocolateDonationRequest request,
 			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
 		return purchaseNoPrice(Item.CHOCOLATE_DONATION,  request.getChocolates(), timestamp, () -> {
+			Author author = super.getAuthor();
+			int totalDonations = authorRepository.sumOfChocolatesUsed(author.getAuthorId(), Item.CHOCOLATE_DONATION.itemId);
 			
-			return ApiResponse.make(OdResponseType.OK);
+			ChocolateDonationResponse response = new ChocolateDonationResponse();
+			response.setTotalDonations(totalDonations * -1);
+			return ApiResponse.make(OdResponseType.OK, response);
 		});
 	}
 
@@ -455,8 +466,10 @@ public class AuthorStoreController extends AbstractAuthorController {
 		
 		this.throwExceptionIfHasNotEnoughChocolates(author, item.price);
 		ResponseEntity<ApiResponse<R>> purchase = purchaser.purchase();
-		this.payChocolates(author, item.price, item.itemId);
 		
+		if (item.price > 0) {
+			this.payChocolates(author, item.price, item.itemId);	
+		}
 		return purchase;
 	}
 

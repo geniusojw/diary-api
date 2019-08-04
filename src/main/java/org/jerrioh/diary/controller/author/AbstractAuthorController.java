@@ -15,6 +15,7 @@ import org.jerrioh.common.util.StringUtil;
 import org.jerrioh.diary.controller.AbstractController;
 import org.jerrioh.diary.domain.Author;
 import org.jerrioh.diary.domain.DiaryGroup;
+import org.jerrioh.diary.domain.Nickname;
 import org.jerrioh.diary.domain.repo.AuthorAnalyzedRepository;
 import org.jerrioh.diary.domain.repo.AuthorDiaryRepository;
 import org.jerrioh.diary.domain.repo.AuthorLetterRepository;
@@ -23,6 +24,7 @@ import org.jerrioh.diary.domain.repo.DiaryGroupAuthorRepository;
 import org.jerrioh.diary.domain.repo.DiaryGroupRepository;
 import org.jerrioh.diary.domain.repo.FeedbackAuthorRepository;
 import org.jerrioh.diary.domain.repo.FeedbackDiaryRepository;
+import org.jerrioh.diary.domain.repo.NicknameRepository;
 import org.jerrioh.diary.domain.repo.PostRepository;
 import org.jerrioh.security.authentication.after.CompleteAuthorToken;
 import org.joda.time.DateTime;
@@ -50,6 +52,8 @@ public abstract class AbstractAuthorController extends AbstractController {
 	protected FeedbackAuthorRepository  feedbackAuthorRepository;
 	@Autowired
 	protected PostRepository postRepository;
+	@Autowired
+	protected NicknameRepository nicknameRepository;
 	@Autowired
 	protected OdMessageSource messageSource;
 
@@ -108,9 +112,37 @@ public abstract class AbstractAuthorController extends AbstractController {
 		return authorCode;
 	}
 
-	protected String generateNickName() {
+	protected String generateNickname(String language) {
 		// TODO 거의 중복되지 않을 정도의 충분한 조합 필요
-		return StringUtil.randomString("멍청이", "천재오정욱", "바퀴벌레", "똥오줌", "원숭이", "고릴라", "동네바보", "변신로봇");
+		// 동물
+		// 개 : 삽살개, 시바견
+		// 도마뱀 : 코모도새끼도마뱀, 코모도왕대왕
+		// 사자 : 왕중의왕 사자, 정글의왕 사자, 밀림의왕 사자
+		// 원숭이 : 긴팔원숭이, 일본원숭이, 
+		// 토끼 : 
+		// 고릴라 : 동킹콩킹
+		// 드래곤 : 화염드래곤
+		// 바퀴벌레
+		//
+		// 사람
+		// 동네사람 : 형, 할아버지, 할머니, 아주머니, 아저씨, 형
+		// 프로그래머 : 미쳐버린 코더, 정의의 해커, 
+		//
+		// 위대한사람
+		// 오정욱 : 천재, 미친천재
+		//
+		// 기계
+		// 변신로봇 : 2단변신, 3단변신, 4단변신, 5단변신, 6단변신, 7단변신, 8단변신, 9단변신, 10단변신, 11단변신
+		// 
+		// 무생물
+		// 배설물 : 더러운똥오줌, 구토잔해물
+		
+		Nickname nickname = nicknameRepository.findNotUsedOne("kor".equals(language) ? "kor" : "eng");
+		if (nickname == null) {
+			return "unknown";
+		} else {
+			return nickname.getNickname();
+		}
 	}
 
 	protected String generateDescription() {

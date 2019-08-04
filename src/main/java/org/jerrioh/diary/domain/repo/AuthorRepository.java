@@ -40,4 +40,9 @@ public interface AuthorRepository extends JpaRepository<Author, String> {
 			+ "SELECT AUTHOR_ID, (SELECT IFNULL(MAX(SEQUENCE), 0) + 1 FROM AUTHOR_CHOCOLATES_HISTORY WHERE AUTHOR_ID = :authorId), :chocolatesChanged, CHOCOLATES, :details "
 			+ "FROM AUTHOR WHERE AUTHOR_ID = :authorId", nativeQuery = true)
 	void insertChocolateHistory(@Param("authorId") String authorId, @Param("chocolatesChanged") int chocolatesChanged, @Param("details") String details);
+	
+	@Query(value = "SELECT IFNULL(SUM(CHOCOLATES_CHANGED), 0) FROM AUTHOR_CHOCOLATES_HISTORY "
+			+ "WHERE AUTHOR_ID = :authorId "
+			+ "AND DETAILS = :details ", nativeQuery = true)
+	int sumOfChocolatesUsed(@Param("authorId") String authorId, @Param("details") String details);
 }

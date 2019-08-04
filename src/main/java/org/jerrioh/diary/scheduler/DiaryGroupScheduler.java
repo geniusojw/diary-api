@@ -46,7 +46,6 @@ public class DiaryGroupScheduler extends AbstractScheduler {
 		String messageKeyWhere = "combination.where" + RANDOM.nextInt(MESSAGE_KEY_MAX_INDEX_COMBINATION_WHERE + 1);
 		String messageKeyWhoAssist = "combination.who.assist" + RANDOM.nextInt(MESSAGE_KEY_MAX_INDEX_COMBINATION_WHO_ASSIST + 1);
 		String messageKeyWho = "combination.who" + RANDOM.nextInt(MESSAGE_KEY_MAX_INDEX_COMBINATION_WHO + 1);
-
 		
 		String where = messageSource.getMessage(messageKeyWhere, language);
 		if (RANDOM.nextInt(5) > 0) {

@@ -12,5 +12,5 @@ DROP TABLE IF EXISTS diary_group_author;
 DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS feedback_diary;
 DROP TABLE IF EXISTS feedback_author;
--- DROP TABLE IF EXISTS about;
+DROP TABLE IF EXISTS nickname;
 DROP TABLE IF EXISTS app;

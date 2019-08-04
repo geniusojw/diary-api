@@ -18,6 +18,7 @@ import org.jerrioh.diary.controller.account.payload.AccountRequest;
 import org.jerrioh.diary.controller.account.payload.AccountResponse;
 import org.jerrioh.diary.controller.account.payload.ChangePasswordRequest;
 import org.jerrioh.diary.controller.account.payload.DeleteAccountRequest;
+import org.jerrioh.diary.controller.account.payload.FindLockPasswordRequest;
 import org.jerrioh.diary.controller.account.payload.FindPasswordRequest;
 import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Account;
@@ -86,7 +87,7 @@ public class AccountController extends AbstractAccountController {
 			String subject = messageSource.getMessage("account.findpassword.subject", language);
 			String text = messageSource.getMessage("account.findpassword.text", language, generatedPassword);
 			
-			MailUtil.sendmail("jerrioh@naver.com", subject, text);
+			MailUtil.sendmail(account.getAccountEmail(), subject, text);
 		} catch (MessagingException | UnsupportedEncodingException e) {
 			OdLogger.error("sendMail fail", e);
 			throw new OdException(OdResponseType.INTERNAL_SERVER_ERROR);
@@ -94,6 +95,26 @@ public class AccountController extends AbstractAccountController {
 		
 		account.setPasswordEnc(EncodingUtil.passwordEncode(generatedPassword));
 		accountRepository.save(account);
+
+		return ApiResponse.make(OdResponseType.OK);
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@PostMapping(value = "/find-lock-password")
+	public ResponseEntity<ApiResponse<Object>> findPassword(@RequestBody @Valid FindLockPasswordRequest request,
+			@RequestHeader(value = OdHeaders.LANGUAGE) String language) throws OdException {
+		Account account = super.getAccount();
+
+		// 이메일 발송, 발송실패 시 에러
+		try {
+			String subject = messageSource.getMessage("account.findlock.subject", language);
+			String text = messageSource.getMessage("account.findlock.text", language, request.getLock());
+
+			MailUtil.sendmail(account.getAccountEmail(), subject, text);
+		} catch (MessagingException | UnsupportedEncodingException e) {
+			OdLogger.error("sendMail fail", e);
+			throw new OdException(OdResponseType.INTERNAL_SERVER_ERROR);
+		}
 
 		return ApiResponse.make(OdResponseType.OK);
 	}

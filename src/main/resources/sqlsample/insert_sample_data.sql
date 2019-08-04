@@ -1,7 +1,3 @@
--- necessary data
-INSERT INTO author (author_id, author_code, nickname, description, chocolates) VALUES ('475a45d5-d139-4e3a-9828-e00e296c9040', 'tellmeyouloveme.', 'Administrator', 'Administrator OJW', 0);
-
--- test data
 INSERT INTO author (author_id, author_code, nickname, description, chocolates) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46811', 'RcDHKCZRhQXLe3Cj', 'genius OJW', 'He is obviously a genius.', 0);
 INSERT INTO author (author_id, author_code, nickname, description, chocolates) VALUES ('92f44a4e-09ea-4fa5-ab54-df3c10a46812', 'RcDHKCZRhQXLe3Cj', 'Super Man', 'Super Man~~~', 30);
 

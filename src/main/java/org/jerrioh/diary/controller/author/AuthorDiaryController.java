@@ -62,6 +62,12 @@ public class AuthorDiaryController extends AbstractAuthorController {
 		}
 		diary.setDeleted(true);
 		authorDiaryRepository.save(diary);
+		
+
+		author.setChocolates(author.getChocolates() + 1);
+		authorRepository.save(author);
+		authorRepository.insertChocolateHistory(author.getAuthorId(), 1, "TODAY DIARY");
+		
 		return ApiResponse.make(OdResponseType.OK);
 	}
 }

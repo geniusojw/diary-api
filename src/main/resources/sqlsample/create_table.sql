@@ -156,13 +156,13 @@ CREATE TABLE IF NOT EXISTS feedback_author
   CONSTRAINT feedback_author_pk PRIMARY KEY (from_author_id, to_author_id, feedback_author_type)
 );
 
-
---CREATE TABLE IF NOT EXISTS about
---(
---  about_type INT(11) NOT NULL,
---  about_description VARCHAR(255) NOT NULL,
---  CONSTRAINT author_feedback_pk PRIMARY KEY (about_type)
---);
+CREATE TABLE IF NOT EXISTS nickname
+(
+  nickname VARCHAR(50) NOT NULL,
+  nickname_class_name VARCHAR(50) NOT NULL,
+  language VARCHAR(10) NOT NULL,
+  CONSTRAINT nickname_pk PRIMARY KEY (nickname)
+);
 
 CREATE TABLE IF NOT EXISTS app
 (

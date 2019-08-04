@@ -6,6 +6,7 @@ public class PurchaseThemeResponse {
 	private String pattern1;
 	private String pattern2;
 	private String pattern3;
+	private String bannerColor;
 	
 	public String getThemeName() {
 		return themeName;
@@ -36,5 +37,11 @@ public class PurchaseThemeResponse {
 	}
 	public void setPattern3(String pattern3) {
 		this.pattern3 = pattern3;
+	}
+	public String getBannerColor() {
+		return bannerColor;
+	}
+	public void setBannerColor(String bannerColor) {
+		this.bannerColor = bannerColor;
 	}
 }

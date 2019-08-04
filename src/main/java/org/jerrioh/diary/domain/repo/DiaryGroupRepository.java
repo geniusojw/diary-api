@@ -31,7 +31,7 @@ public interface DiaryGroupRepository extends JpaRepository<DiaryGroup, Long> {
 			+ "AND DG.LANGUAGE = :language "
 			+ "AND DG.COUNTRY = :country "
 			+ "AND DG.TIME_ZONE_ID = :timeZoneId "
-			+ "AND DG.MAX_AUTHOR_COUNT > (SELECT COUNT(1) FROM DIARY_GROUP_AUTHOR DGA WHERE DGA.DIARY_GROUP_ID = DG.DIARY_GROUP_ID AND DGA.AUTHOR_STATUS IN (0, 1)) "
+			+ "AND DG.MAX_AUTHOR_COUNT > (SELECT COUNT(1) FROM DIARY_GROUP_AUTHOR DGA WHERE DGA.DIARY_GROUP_ID = DG.DIARY_GROUP_ID) "
 			+ "ORDER BY DG.START_TIME DESC "
 			+ "LIMIT 1", nativeQuery = true)
 	DiaryGroup findInviteDiaryGroup(@Param("language") String language, @Param("country") String country, @Param("timeZoneId") String timeZoneId);

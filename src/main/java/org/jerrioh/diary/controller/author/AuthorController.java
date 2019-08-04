@@ -4,6 +4,7 @@ import javax.validation.Valid;
 
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
+import org.jerrioh.diary.controller.OdHeaders;
 import org.jerrioh.diary.controller.author.payload.AuthorRequest;
 import org.jerrioh.diary.controller.author.payload.AuthorResponse;
 import org.jerrioh.diary.controller.payload.ApiResponse;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,16 +25,17 @@ public class AuthorController extends AbstractAuthorController {
 	
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/start")
-	public ResponseEntity<ApiResponse<AuthorResponse>> create(@RequestBody @Valid AuthorRequest request) throws OdException {
+	public ResponseEntity<ApiResponse<AuthorResponse>> create(@RequestBody @Valid AuthorRequest request,
+			@RequestHeader(value = OdHeaders.LANGUAGE) String language) throws OdException {
 		Author author = authorRepository.findByAuthorId(request.getAuthorId());
 		if (author != null) {
 			throw new OdException(OdResponseType.USER_CONFLICT);
 		}
-		
+
 		author = new Author();
 		author.setAuthorId(request.getAuthorId());
 		author.setAuthorCode(generateAuthorCode());
-		author.setNickname(generateNickName());
+		author.setNickname(generateNickname(language));
 		author.setDescription(generateDescription());
 		author.setChocolates(20);
 		authorRepository.save(author);
@@ -40,7 +43,7 @@ public class AuthorController extends AbstractAuthorController {
 		authorRepository.insertNickNameHistory(author.getAuthorId());
 		authorRepository.insertDescriptionHistory(author.getAuthorId());
 		authorRepository.insertChocolateHistory(author.getAuthorId(), 0, "start");
-		
+
 		AuthorResponse response = authorToResponse(author);
 		return ApiResponse.make(OdResponseType.OK, response);
 	}
