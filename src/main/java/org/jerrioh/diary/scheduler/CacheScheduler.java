@@ -10,18 +10,29 @@ import org.springframework.stereotype.Component;
 public class CacheScheduler extends AbstractScheduler {
 
 	public static final String CACHE_WEATHER = "cache.weather";
+	public static final String CACHE_FEEDBACK_AUTHOR = "cache.feedback.author";
 
 	@Autowired
 	private CacheManager cacheManager;
 
 	@Scheduled(cron = ON_0_AND_30_MINUTE)
 	public void clearWeatherCache() {
-		OdLogger.info("Scheduler - clearWeatherCache() started");
+		OdLogger.info("Scheduler - clear cache() started");
+//		evictCaches(CACHE_WEATHER);
 		evictAllCaches();
-		OdLogger.info("Scheduler - clearWeatherCache() finished");
+		OdLogger.info("Scheduler - clear cache() finished");
 	}
 
-	public void evictAllCaches() {
+//	private void evictCaches(String cacheName) {
+//		cacheManager.getCacheNames().stream().forEach(c -> {
+//			if (StringUtils.equals(c, cacheName)) {
+//				OdLogger.info("{} cleared.", c);
+//				cacheManager.getCache(c).clear();	
+//			}
+//		});
+//	}
+
+	private void evictAllCaches() {
 		cacheManager.getCacheNames().stream().forEach(cacheName -> {
 			OdLogger.info("{} cleared.", cacheName);
 			cacheManager.getCache(cacheName).clear();

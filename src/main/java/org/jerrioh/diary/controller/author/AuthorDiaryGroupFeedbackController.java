@@ -3,6 +3,7 @@ package org.jerrioh.diary.controller.author;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -29,9 +30,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/author/feedback")
 public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController {
-
-	private static final Random RANDOM = new Random();
 	private static final int TOTAL_TYPE_COUNT = 30;
+
+	private long authorTypeTime = 0L;
+	private List<Integer> authorTypes = null;
+	private Random random = new Random();
 	
 	@PostMapping("/author/types")
 	public ResponseEntity<ApiResponse<GetFeedbackTypeResponse>> getRandomFeebackTypes(
@@ -126,12 +129,18 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 			throw new OdException(OdResponseType.USER_NOT_FOUND);
 		}
 	}
-
+	
+	// Cache 수동 구현. Cacheable 동작하지 않는 이유는?
 	private List<Integer> getRandomAuthorTypes() throws OdException {
+		long currentTime = System.currentTimeMillis();
+		if (currentTime < this.authorTypeTime + TimeUnit.MINUTES.toMillis(1)) {
+			return this.authorTypes;
+		}
+		
 		List<Integer> authorTypes = new ArrayList<>();
 		int tryCount = 0;
 		while (authorTypes.size() < 3 && tryCount < 50) {
-			int randomAboutType = RANDOM.nextInt(TOTAL_TYPE_COUNT) + 1; // 1 ~ MAX
+			int randomAboutType = random.nextInt(TOTAL_TYPE_COUNT) + 1; // 1 ~ MAX
 			if (!authorTypes.contains(randomAboutType)) {
 				authorTypes.add(randomAboutType);
 			}
@@ -140,6 +149,8 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 		if (authorTypes.size() != 3) {
 			throw new OdException(OdResponseType.INTERNAL_SERVER_ERROR);
 		}
+		this.authorTypes = authorTypes;
+		this.authorTypeTime = currentTime;
 		return authorTypes;
 	}
 }
