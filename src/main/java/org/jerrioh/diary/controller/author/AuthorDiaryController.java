@@ -11,6 +11,7 @@ import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Author;
 import org.jerrioh.diary.domain.AuthorDiary;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/author/diaries")
 public class AuthorDiaryController extends AbstractAuthorController {
-	
+
+	@Transactional(rollbackFor = Exception.class)
 	@PostMapping
 	public ResponseEntity<ApiResponse<Object>> write(@RequestBody @Valid AuthorDiaryRequest request,
 			@RequestHeader(value = OdHeaders.LANGUAGE) String language,
@@ -48,6 +50,10 @@ public class AuthorDiaryController extends AbstractAuthorController {
 		diary.setTimeZoneId(timeZoneId);
 		
 		authorDiaryRepository.save(diary);
+
+		author.setChocolates(author.getChocolates() + 1);
+		authorRepository.save(author);
+		authorRepository.insertChocolateHistory(author.getAuthorId(), 1, "TODAY DIARY");
 		
 		return ApiResponse.make(OdResponseType.OK);
 	}
@@ -62,11 +68,6 @@ public class AuthorDiaryController extends AbstractAuthorController {
 		}
 		diary.setDeleted(true);
 		authorDiaryRepository.save(diary);
-		
-
-		author.setChocolates(author.getChocolates() + 1);
-		authorRepository.save(author);
-		authorRepository.insertChocolateHistory(author.getAuthorId(), 1, "TODAY DIARY");
 		
 		return ApiResponse.make(OdResponseType.OK);
 	}
