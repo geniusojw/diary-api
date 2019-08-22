@@ -83,6 +83,13 @@ public class DiaryScheduler extends AbstractScheduler {
 					authorAnalyzed.setLanguage(language);
 					authorAnalyzed.setCountry(country);
 					authorAnalyzed.setTimeZoneId(timeZoneId);
+					
+					authorAnalyzed.setFactorNeuroticism(0);
+					authorAnalyzed.setFactorExtraversion(0);
+					authorAnalyzed.setFactorOpenness(0);
+					authorAnalyzed.setFactorAgreeableness(0);
+					authorAnalyzed.setFactorConscientiousness(0);
+					
 					authorAnalyzedRepository.save(authorAnalyzed);
 					OdLogger.info("saved. authorId = {}", author.getAuthorId());
 				}

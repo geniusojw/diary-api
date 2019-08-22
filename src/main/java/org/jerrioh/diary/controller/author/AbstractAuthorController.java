@@ -24,6 +24,7 @@ import org.jerrioh.diary.domain.repo.DiaryGroupAuthorRepository;
 import org.jerrioh.diary.domain.repo.DiaryGroupRepository;
 import org.jerrioh.diary.domain.repo.FeedbackAuthorRepository;
 import org.jerrioh.diary.domain.repo.FeedbackDiaryRepository;
+import org.jerrioh.diary.domain.repo.FeedbackRepository;
 import org.jerrioh.diary.domain.repo.NicknameRepository;
 import org.jerrioh.diary.domain.repo.PostRepository;
 import org.jerrioh.security.authentication.after.CompleteAuthorToken;
@@ -50,6 +51,8 @@ public abstract class AbstractAuthorController extends AbstractController {
 	protected FeedbackDiaryRepository feedbackDiaryRepository;
 	@Autowired
 	protected FeedbackAuthorRepository  feedbackAuthorRepository;
+	@Autowired
+	protected FeedbackRepository feedbackRepository;
 	@Autowired
 	protected PostRepository postRepository;
 	@Autowired

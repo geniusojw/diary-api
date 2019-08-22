@@ -35,6 +35,7 @@ import org.jerrioh.diary.controller.author.payload.PurchaseThemeResponse;
 import org.jerrioh.diary.controller.author.payload.StoreStatusResponse;
 import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Author;
+import org.jerrioh.diary.domain.AuthorAnalyzed;
 import org.jerrioh.diary.domain.DiaryGroup;
 import org.jerrioh.diary.domain.DiaryGroupAuthor;
 import org.jerrioh.diary.domain.DiaryGroupAuthor.AuthorStatus;
@@ -65,7 +66,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 	@Autowired
 	private WeatherClient weatherClient;
 	
-	private static final Random RANDOM = new Random();
+	private final Random random = new Random();
 	
 	// configuration values
 	private static final int DESCRIPTION_AND_NICKNAME_CHANGE_HOURS = 1;
@@ -118,6 +119,11 @@ public class AuthorStoreController extends AbstractAuthorController {
 		DiaryGroup diaryGroup = diaryGroupRepository.findAcceptedOrAcceptableByAuthorId(author.getAuthorId());
 		if (diaryGroup != null) {
 			priceMap.put(Item.DIARY_GROUP_INVITATION.itemId, -1);
+		} else {
+			AuthorAnalyzed authorAnalyzed = authorAnalyzedRepository.findByAuthorId(author.getAuthorId());
+			if (authorAnalyzed == null) {
+				priceMap.put(Item.DIARY_GROUP_INVITATION.itemId, -1);	
+			}
 		}
 		
 		StoreStatusResponse response = new StoreStatusResponse();
@@ -247,7 +253,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 		try {
 			ClassPathResource classPathResource = new ClassPathResource("diary-theme");
 			File[] themeDirectories = classPathResource.getFile().listFiles();
-			int randomIndex = RANDOM.nextInt(themeDirectories.length);
+			int randomIndex = random.nextInt(themeDirectories.length);
 			File randomThemeDirectory = themeDirectories[randomIndex];
 			
 			// select random theme
@@ -318,7 +324,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 		try {
 			ClassPathResource classPathResource = new ClassPathResource("diary-music");
 			File[] mp3Files = classPathResource.getFile().listFiles();
-			int randomIndex = RANDOM.nextInt(mp3Files.length);
+			int randomIndex = random.nextInt(mp3Files.length);
 			File randomMp3File = mp3Files[randomIndex];
 			
 			musicName = randomMp3File.getName();

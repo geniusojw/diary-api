@@ -1,5 +1,7 @@
 package org.jerrioh.diary.controller.author;
 
+import java.util.Random;
+
 import javax.validation.Valid;
 
 import org.jerrioh.common.exception.OdException;
@@ -23,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/author/diaries")
 public class AuthorDiaryController extends AbstractAuthorController {
+	
+	private final Random random = new Random();
 
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping
@@ -51,7 +55,8 @@ public class AuthorDiaryController extends AbstractAuthorController {
 		
 		authorDiaryRepository.save(diary);
 
-		author.setChocolates(author.getChocolates() + 1);
+		int reward = random.nextInt(3) + 4;
+		author.setChocolates(author.getChocolates() + reward);
 		authorRepository.save(author);
 		authorRepository.insertChocolateHistory(author.getAuthorId(), 1, "TODAY DIARY");
 		

@@ -39,13 +39,14 @@ public class AccountController extends AbstractAccountController {
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/sign-up")
 	public ResponseEntity<ApiResponse<AccountResponse>> signUp(@RequestBody @Valid AccountRequest request) throws OdException {
-		Account account = accountRepository.findByAccountEmail(request.getAccountEmail());
+		String accountEmail = request.getAccountEmail().toLowerCase();
+		Account account = accountRepository.findByAccountEmail(accountEmail);
 		if (account != null) {
 			throw new OdException(OdResponseType.USER_CONFLICT);
 		}
 		
 		account = new Account();
-		account.setAccountEmail(request.getAccountEmail());
+		account.setAccountEmail(accountEmail);
 		account.setPasswordEnc(EncodingUtil.passwordEncode(request.getPassword()));
 		account.setFirstAuthorId(request.getAuthorId());
 		account.setLastAuthorId(request.getAuthorId());
@@ -66,9 +67,11 @@ public class AccountController extends AbstractAccountController {
 		Account account = (Account) postAuthentication.getPrincipal();
 		account.setLastAuthorId(request.getAuthorId());
 		accountRepository.save(account);
+
+		String accountEmail = request.getAccountEmail().toLowerCase();
 		
 		AccountResponse response = new AccountResponse();
-		response.setToken(JwtUtil.generateJwt(request.getAccountEmail()));
+		response.setToken(JwtUtil.generateJwt(accountEmail));
 		return ApiResponse.make(OdResponseType.OK, response);
 	}
 
@@ -76,7 +79,8 @@ public class AccountController extends AbstractAccountController {
 	@PostMapping(value = "/find-password")
 	public ResponseEntity<ApiResponse<Object>> findPassword(@RequestBody @Valid FindPasswordRequest request,
 			@RequestHeader(value = OdHeaders.LANGUAGE) String language) throws OdException {
-		Account account = accountRepository.findByAccountEmail(request.getAccountEmail());
+		String accountEmail = request.getAccountEmail().toLowerCase();
+		Account account = accountRepository.findByAccountEmail(accountEmail);
 		if (account == null) {
 			throw new OdException(OdResponseType.USER_NOT_FOUND);
 		}

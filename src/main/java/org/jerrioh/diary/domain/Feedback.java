@@ -6,21 +6,18 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "author_analyzed")
-public class AuthorAnalyzed {
+@Table(name = "feedback")
+public class Feedback {
 	@Id
-	@Column(name = "author_id")
-	private String authorId;
+	@Column(name = "feedback_author_type")
+	private int feedbackAuthorType;
 
-	@Column(name = "language")
-	private String language;
+	@Column(name = "korean_description")
+	private String koreanDescription;
 
-	@Column(name = "country")
-	private String country;
+	@Column(name = "english_description")
+	private String englishDescription;
 
-	@Column(name = "time_zone_id")
-	private String timeZoneId;
-	
 	@Column(name = "factor_neuroticism")
 	private int factorNeuroticism; // 신경성(N)
 
@@ -36,36 +33,28 @@ public class AuthorAnalyzed {
 	@Column(name = "factor_conscientiousness")
 	private int factorConscientiousness; // 성실성(C)
 
-	public String getAuthorId() {
-		return authorId;
+	public int getFeedbackAuthorType() {
+		return feedbackAuthorType;
 	}
 
-	public void setAuthorId(String authorId) {
-		this.authorId = authorId;
+	public void setFeedbackAuthorType(int feedbackAuthorType) {
+		this.feedbackAuthorType = feedbackAuthorType;
 	}
 
-	public String getLanguage() {
-		return language;
+	public String getKoreanDescription() {
+		return koreanDescription;
 	}
 
-	public void setLanguage(String language) {
-		this.language = language;
+	public void setKoreanDescription(String koreanDescription) {
+		this.koreanDescription = koreanDescription;
 	}
 
-	public String getCountry() {
-		return country;
+	public String getEnglishDescription() {
+		return englishDescription;
 	}
 
-	public void setCountry(String country) {
-		this.country = country;
-	}
-
-	public String getTimeZoneId() {
-		return timeZoneId;
-	}
-
-	public void setTimeZoneId(String timeZoneId) {
-		this.timeZoneId = timeZoneId;
+	public void setEnglishDescription(String englishDescription) {
+		this.englishDescription = englishDescription;
 	}
 
 	public int getFactorNeuroticism() {

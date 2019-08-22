@@ -10,34 +10,41 @@ import javax.validation.Valid;
 
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
+import org.jerrioh.diary.controller.OdHeaders;
 import org.jerrioh.diary.controller.author.payload.FeedbackAuthorRequest;
 import org.jerrioh.diary.controller.author.payload.FeedbackAuthorTypeRequest;
 import org.jerrioh.diary.controller.author.payload.FeedbackDiaryRequest;
 import org.jerrioh.diary.controller.author.payload.GetFeedbackTypeResponse;
 import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Author;
+import org.jerrioh.diary.domain.AuthorAnalyzed;
 import org.jerrioh.diary.domain.DiaryGroup;
 import org.jerrioh.diary.domain.DiaryGroupAuthor;
+import org.jerrioh.diary.domain.Feedback;
 import org.jerrioh.diary.domain.FeedbackAuthor;
 import org.jerrioh.diary.domain.FeedbackDiary;
 import org.jerrioh.diary.domain.FeedbackDiary.FeedbackDiaryType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/author/feedback")
 public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController {
-	private static final int TOTAL_TYPE_COUNT = 30;
-
+	
 	private long authorTypeTime = 0L;
 	private List<Integer> authorTypes = null;
 	private Random random = new Random();
 	
+	private Feedback[] feedbacks;
+	
 	@PostMapping("/author/types")
 	public ResponseEntity<ApiResponse<GetFeedbackTypeResponse>> getRandomFeebackTypes(
+			@RequestHeader(value = OdHeaders.LANGUAGE) String language,
 			@RequestBody @Valid FeedbackAuthorTypeRequest request) throws OdException {
 		Author author = super.getAuthor();
 		DiaryGroup diaryGroup = super.getStartedDiaryGroup(author);
@@ -53,17 +60,29 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 		
 		List<Integer> aboutTypes = this.getRandomAuthorTypes();
 
-		GetFeedbackTypeResponse response = new GetFeedbackTypeResponse();
-		response.setAuthorType0(aboutTypes.get(0));
-		response.setAuthorType1(aboutTypes.get(1));
-		response.setAuthorType2(aboutTypes.get(2));
+		int type0Index = aboutTypes.get(0);
+		int type1Index = aboutTypes.get(1);
+		int type2Index = aboutTypes.get(2);
 		
-		response.setAuthorTypeDescription0("description" + aboutTypes.get(0));
-		response.setAuthorTypeDescription1("description" + aboutTypes.get(1));
-		response.setAuthorTypeDescription2("description" + aboutTypes.get(2));
+		GetFeedbackTypeResponse response = new GetFeedbackTypeResponse();
+		response.setAuthorType0(type0Index + 1); // type은 1부터 시작이다. 0은 직접입력
+		response.setAuthorType1(type1Index + 1);
+		response.setAuthorType2(type2Index + 1);
+		
+		if ("kor".equals(language)) {
+			response.setAuthorTypeDescription0(feedbacks[type0Index].getKoreanDescription());
+			response.setAuthorTypeDescription1(feedbacks[type1Index].getKoreanDescription());
+			response.setAuthorTypeDescription2(feedbacks[type2Index].getKoreanDescription());
+		} else {
+			response.setAuthorTypeDescription0(feedbacks[type0Index].getEnglishDescription());
+			response.setAuthorTypeDescription1(feedbacks[type1Index].getEnglishDescription());
+			response.setAuthorTypeDescription2(feedbacks[type2Index].getEnglishDescription());
+		}
+		
 		return ApiResponse.make(OdResponseType.OK, response);
 	}
-	
+
+	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/author")
 	public ResponseEntity<ApiResponse<Object>> feedbackAuthor(@RequestBody @Valid FeedbackAuthorRequest request) throws OdException {
 		Author author = super.getAuthor();
@@ -71,20 +90,35 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 
 		this.checkToAuthorId(author.getAuthorId(), request.getToAuthorId(), diaryGroup.getDiaryGroupId());
 		
-		FeedbackAuthor feedback = feedbackAuthorRepository.findByFromAuthorIdAndToAuthorIdAndDiaryGroupId(
+		FeedbackAuthor feedbackAuthor = feedbackAuthorRepository.findByFromAuthorIdAndToAuthorIdAndDiaryGroupId(
 				author.getAuthorId(), request.getToAuthorId(), diaryGroup.getDiaryGroupId());
 		
-		if (feedback != null) {
+		if (feedbackAuthor != null) {
 			throw new OdException(OdResponseType.FEEDBACK_CONFLICT);
 		}
 		
-		feedback = new FeedbackAuthor();
-		feedback.setFromAuthorId(author.getAuthorId());
-		feedback.setToAuthorId(request.getToAuthorId());
-		feedback.setDiaryGroupId(diaryGroup.getDiaryGroupId());
-		feedback.setFeedbackAuthorType(request.getFeedbackAuthorType());
-		feedback.setFeedbackAuthorWrite(request.getFeedbackAuthorWrite());
-		feedbackAuthorRepository.save(feedback);
+		feedbackAuthor = new FeedbackAuthor();
+		feedbackAuthor.setFromAuthorId(author.getAuthorId());
+		feedbackAuthor.setToAuthorId(request.getToAuthorId());
+		feedbackAuthor.setDiaryGroupId(diaryGroup.getDiaryGroupId());
+		feedbackAuthor.setFeedbackAuthorType(request.getFeedbackAuthorType());
+		feedbackAuthor.setFeedbackAuthorWrite(request.getFeedbackAuthorWrite());
+		feedbackAuthorRepository.save(feedbackAuthor);
+		
+		// 0: 직접작성, 1 이상 : 타입선택
+		if (request.getFeedbackAuthorType() > 0) {
+			Feedback feedback = feedbacks[request.getFeedbackAuthorType() - 1];
+			
+			AuthorAnalyzed authorAnalyzed = authorAnalyzedRepository.findByAuthorId(author.getAuthorId());
+			if (authorAnalyzed != null) {
+				authorAnalyzed.setFactorNeuroticism(authorAnalyzed.getFactorNeuroticism() + feedback.getFactorNeuroticism());
+				authorAnalyzed.setFactorExtraversion(authorAnalyzed.getFactorExtraversion() + feedback.getFactorExtraversion());
+				authorAnalyzed.setFactorOpenness(authorAnalyzed.getFactorOpenness() + feedback.getFactorOpenness());
+				authorAnalyzed.setFactorAgreeableness(authorAnalyzed.getFactorAgreeableness() + feedback.getFactorAgreeableness());
+				authorAnalyzed.setFactorConscientiousness(authorAnalyzed.getFactorConscientiousness() + feedback.getFactorConscientiousness());
+				authorAnalyzedRepository.save(authorAnalyzed);
+			}
+		}
 		
 		return ApiResponse.make(OdResponseType.OK);
 	}
@@ -132,6 +166,10 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 	
 	// Cache 수동 구현. Cacheable 동작하지 않는 이유는?
 	private List<Integer> getRandomAuthorTypes() throws OdException {
+		if (feedbacks == null) {
+			feedbacks = feedbackRepository.findAll().toArray(new Feedback[] {});
+		}
+		
 		long currentTime = System.currentTimeMillis();
 		if (currentTime < this.authorTypeTime + TimeUnit.MINUTES.toMillis(1)) {
 			return this.authorTypes;
@@ -140,7 +178,7 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 		List<Integer> authorTypes = new ArrayList<>();
 		int tryCount = 0;
 		while (authorTypes.size() < 3 && tryCount < 50) {
-			int randomAboutType = random.nextInt(TOTAL_TYPE_COUNT) + 1; // 1 ~ MAX
+			int randomAboutType = random.nextInt(feedbacks.length);
 			if (!authorTypes.contains(randomAboutType)) {
 				authorTypes.add(randomAboutType);
 			}

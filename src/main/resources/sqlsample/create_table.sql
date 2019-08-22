@@ -48,6 +48,11 @@ CREATE TABLE IF NOT EXISTS author_analyzed
   language VARCHAR(10) NOT NULL,
   country VARCHAR(10) NOT NULL,
   time_zone_id VARCHAR(30) NOT NULL,
+  factor_neuroticism INT(11) NOT NULL,
+  factor_extraversion INT(11) NOT NULL,
+  factor_openness INT(11) NOT NULL,
+  factor_agreeableness INT(11) NOT NULL,
+  factor_conscientiousness INT(11) NOT NULL
   CONSTRAINT author_analyzed_pk PRIMARY KEY (author_id)
 );
 
@@ -161,9 +166,11 @@ CREATE TABLE IF NOT EXISTS feedback
   feedback_author_type INT(11) NOT NULL COMMENT '1 over: fixed various types',
   korean_description VARCHAR(100) NOT NULL,
   english_description VARCHAR(100) NOT NULL,
-  
-  
-  
+  factor_neuroticism INT(11) NOT NULL,
+  factor_extraversion INT(11) NOT NULL,
+  factor_openness INT(11) NOT NULL,
+  factor_agreeableness INT(11) NOT NULL,
+  factor_conscientiousness INT(11) NOT NULL,
   CONSTRAINT feedback_pk PRIMARY KEY (feedback_author_type)
 );
 
