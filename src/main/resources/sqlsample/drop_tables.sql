@@ -13,4 +13,5 @@ DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS feedback_diary;
 DROP TABLE IF EXISTS feedback_author;
 DROP TABLE IF EXISTS nickname;
+DROP TABLE IF EXISTS wise_saying;
 DROP TABLE IF EXISTS app;

@@ -24,12 +24,14 @@ import org.jerrioh.diary.controller.author.payload.ChangeDescriptionResponse;
 import org.jerrioh.diary.controller.author.payload.ChangeNicknameResponse;
 import org.jerrioh.diary.controller.author.payload.ChocolateDonationRequest;
 import org.jerrioh.diary.controller.author.payload.ChocolateDonationResponse;
+import org.jerrioh.diary.controller.author.payload.CreateWiseSayingRequest;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupCreateRequest;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupResponse;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupSupportRequest;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupSupportRequest.SupportType;
 import org.jerrioh.diary.controller.author.payload.GetWeatherRequest;
 import org.jerrioh.diary.controller.author.payload.GetWeatherResponse;
+import org.jerrioh.diary.controller.author.payload.GetWiseSayingResponse;
 import org.jerrioh.diary.controller.author.payload.PurchaseMusicResponse;
 import org.jerrioh.diary.controller.author.payload.PurchaseThemeResponse;
 import org.jerrioh.diary.controller.author.payload.StoreStatusResponse;
@@ -41,6 +43,7 @@ import org.jerrioh.diary.domain.DiaryGroupAuthor;
 import org.jerrioh.diary.domain.DiaryGroupAuthor.AuthorStatus;
 import org.jerrioh.diary.domain.Post;
 import org.jerrioh.diary.domain.Post.PostStatus;
+import org.jerrioh.diary.domain.WiseSaying;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +81,8 @@ public class AuthorStoreController extends AbstractAuthorController {
 	private Map<String, Long> authorTimestamps = new ConcurrentHashMap<>();
 	
 	static enum Item {
+		WISE_SAYING					("ITEM_WISE_SAYING", 2),
+		CREATE_WISE_SAYING			("ITEM_CREATE_WISE_SAYING", 15),
 		WEATHER						("ITEM_WEATHER", 0),
 		POST_IT						("ITEM_POST_IT", 0),
 		CHANGE_DESCRIPTION			("ITEM_CHANGE_DESCRIPTION", 3),
@@ -133,6 +138,59 @@ public class AuthorStoreController extends AbstractAuthorController {
 	}
 	
 	@Transactional(rollbackFor = Exception.class)
+	@PostMapping(value = "/wise-saying")
+	public ResponseEntity<ApiResponse<GetWiseSayingResponse>> getWiseSaying(
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp,
+			@RequestHeader(value = OdHeaders.LANGUAGE) String language) throws OdException {
+		this.ignoreDuplicatedRequest(timestamp);
+		this.purchasePreCheck(Item.WISE_SAYING, timestamp);
+
+		WiseSaying wiseSaying = null;
+		if (random.nextInt(5) == 0) { // author created : 0.1
+			wiseSaying = wiseSayingRepository.findOneByLanguage(language, true);
+			if (wiseSaying == null) {
+				OdLogger.info("author created saying not found");
+			}
+		}
+		if (wiseSaying == null) {
+			String findLanguage = "kor".equals(language) ? "kor" : "eng";
+			wiseSaying = wiseSayingRepository.findOneByLanguage(findLanguage, false);
+		}
+		
+		this.purchaseComplete(Item.WISE_SAYING, String.valueOf(wiseSaying.getSayingId()));
+		
+		GetWiseSayingResponse response = new GetWiseSayingResponse();
+		response.setSource(wiseSaying.getNickname());
+		response.setWiseSaying(wiseSaying.getSaying());
+		
+		return ApiResponse.make(OdResponseType.OK, response);
+	}
+	
+	@Transactional(rollbackFor = Exception.class)
+	@PostMapping(value = "/create-wise-saying")
+	public ResponseEntity<ApiResponse<Object>> createWiseSaying(
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp,
+			@RequestHeader(value = OdHeaders.LANGUAGE) String language,
+			@RequestBody @Valid CreateWiseSayingRequest request) throws OdException {
+		this.ignoreDuplicatedRequest(timestamp);
+		this.purchasePreCheck(Item.CREATE_WISE_SAYING, timestamp);
+
+		Author author = this.getAuthor();
+		
+		WiseSaying wiseSaying = new WiseSaying();
+		wiseSaying.setLanguage(language);
+		wiseSaying.setNickname(author.getNickname());
+		wiseSaying.setSaying(request.getSaying());
+		wiseSaying.setAuthorCreated(true);
+		
+		this.purchaseComplete(Item.CREATE_WISE_SAYING, null);
+		
+		wiseSayingRepository.save(wiseSaying);
+		
+		return ApiResponse.make(OdResponseType.OK);
+	}
+	
+	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/weather")
 	public ResponseEntity<ApiResponse<GetWeatherResponse>> getWeather(@RequestBody @Valid GetWeatherRequest request,
 			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp,
@@ -157,12 +215,13 @@ public class AuthorStoreController extends AbstractAuthorController {
 	
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/buy-post-it")
-	public ResponseEntity<ApiResponse<Object>> butPostIt(@RequestBody @Valid BuyPostItRequest request,
-			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
+	public ResponseEntity<ApiResponse<Object>> butPostIt(
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp,
+			@RequestBody @Valid BuyPostItRequest request) throws OdException {
 		this.ignoreDuplicatedRequest(timestamp);
 		this.purchasePreCheck(Item.POST_IT, request.getPrice());
 		
-		Author author = AuthorStoreController.this.getAuthor();
+		Author author = this.getAuthor();
 		Post post = postRepository.findMyNotPosted(author.getAuthorId());
 		if (post != null) {
 			throw new OdException(OdResponseType.PRECONDITION_FAILED);
@@ -193,7 +252,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 		this.ignoreDuplicatedRequest(timestamp);
 		this.purchasePreCheck(Item.CHANGE_DESCRIPTION, timestamp);
 		
-		Author author = AuthorStoreController.this.getAuthor();
+		Author author = this.getAuthor();
 		if (authorRepository.descriptionChangable(author.getAuthorId(),
 				DESCRIPTION_AND_NICKNAME_CHANGE_HOURS) == 0) {
 			OdLogger.info("Can not change description yet.");
@@ -279,8 +338,8 @@ public class AuthorStoreController extends AbstractAuthorController {
 	
 	@PostMapping(value = "/download-theme/{themeName}")
 	public ResponseEntity<ApiResponse<PurchaseThemeResponse>> downloadTheme(
-			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp,
-			@PathVariable(name = "themeName") String themeName) throws OdException {
+			@PathVariable(name = "themeName") String themeName,
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
 		this.ignoreDuplicatedRequest(timestamp);
 
 		String[] patterns = new String[4];
@@ -344,8 +403,8 @@ public class AuthorStoreController extends AbstractAuthorController {
 	
 	@PostMapping(value = "/download-music/{musicName}")
 	public ResponseEntity<ApiResponse<PurchaseMusicResponse>> downloadMusic(
-			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp,
-			@PathVariable(name = "musicName") String musicName) throws OdException {
+			@PathVariable(name = "musicName") String musicName,
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
 		this.ignoreDuplicatedRequest(timestamp);
 		
 		String musicData;
@@ -368,11 +427,12 @@ public class AuthorStoreController extends AbstractAuthorController {
 
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/diary-group-invitation")
-	public ResponseEntity<ApiResponse<DiaryGroupResponse>> createDiaryGroup(@RequestBody @Valid DiaryGroupCreateRequest request,
+	public ResponseEntity<ApiResponse<DiaryGroupResponse>> createDiaryGroup(
 			@RequestHeader(value = OdHeaders.LANGUAGE, required = true) String language,
 			@RequestHeader(value = OdHeaders.COUNTRY, required = true) String country,
 			@RequestHeader(value = OdHeaders.TIME_ZONE_ID, required = true) String timeZoneId,
-			@RequestHeader(value = OdHeaders.TIMESTAMP, required = true) Long timestamp) throws OdException {
+			@RequestHeader(value = OdHeaders.TIMESTAMP, required = true) Long timestamp,
+			@RequestBody @Valid DiaryGroupCreateRequest request) throws OdException {
 
 		this.purchasePreCheck(Item.DIARY_GROUP_INVITATION, timestamp);
 		
@@ -432,8 +492,9 @@ public class AuthorStoreController extends AbstractAuthorController {
 
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/diary-group-support")
-	public ResponseEntity<ApiResponse<DiaryGroupResponse>> supportDiaryGroup(@RequestBody @Valid DiaryGroupSupportRequest request,
-			@RequestHeader(value = OdHeaders.TIMESTAMP, required = true) Long timestamp) throws OdException {
+	public ResponseEntity<ApiResponse<DiaryGroupResponse>> supportDiaryGroup(
+			@RequestHeader(value = OdHeaders.TIMESTAMP, required = true) Long timestamp,
+			@RequestBody @Valid DiaryGroupSupportRequest request) throws OdException {
 
 		this.purchasePreCheck(Item.DIARY_GROUP_SUPPORT, timestamp);
 		
@@ -493,8 +554,9 @@ public class AuthorStoreController extends AbstractAuthorController {
 
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/chocolate-donation")
-	public ResponseEntity<ApiResponse<ChocolateDonationResponse>> chocolateDonation(@RequestBody @Valid ChocolateDonationRequest request,
-			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
+	public ResponseEntity<ApiResponse<ChocolateDonationResponse>> chocolateDonation(
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp,
+			@RequestBody @Valid ChocolateDonationRequest request) throws OdException {
 
 		this.purchasePreCheck(Item.CHOCOLATE_DONATION, request.getChocolates());
 		
@@ -513,12 +575,6 @@ public class AuthorStoreController extends AbstractAuthorController {
 		R purchase() throws OdException;
 	}
 	
-
-	private void purchasePreCheck(Item item, Long timestamp) throws OdException {
-		this.purchasePreCheck(item, item.price);
-	}
-
-	
 	private void ignoreDuplicatedRequest(Long timestamp) throws OdException {
 		Author author = super.getAuthor();
 		Long previousTimestamp = authorTimestamps.get(author.getAuthorId());
@@ -527,6 +583,10 @@ public class AuthorStoreController extends AbstractAuthorController {
 			throw new OdException(OdResponseType.TOO_MANY_REQUESTS);
 		}
 		authorTimestamps.put(author.getAuthorId(), timestamp);
+	}
+
+	private void purchasePreCheck(Item item, Long timestamp) throws OdException {
+		this.purchasePreCheck(item, item.price);
 	}
 	
 	private void purchasePreCheck(Item item, int price) throws OdException {

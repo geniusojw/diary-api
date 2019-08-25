@@ -109,16 +109,29 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 		if (request.getFeedbackAuthorType() > 0) {
 			Feedback feedback = feedbacks[request.getFeedbackAuthorType() - 1];
 			
-			AuthorAnalyzed authorAnalyzed = authorAnalyzedRepository.findByAuthorId(author.getAuthorId());
-			if (authorAnalyzed != null) {
-				authorAnalyzed.setFactorNeuroticism(authorAnalyzed.getFactorNeuroticism() + feedback.getFactorNeuroticism());
-				authorAnalyzed.setFactorExtraversion(authorAnalyzed.getFactorExtraversion() + feedback.getFactorExtraversion());
-				authorAnalyzed.setFactorOpenness(authorAnalyzed.getFactorOpenness() + feedback.getFactorOpenness());
-				authorAnalyzed.setFactorAgreeableness(authorAnalyzed.getFactorAgreeableness() + feedback.getFactorAgreeableness());
-				authorAnalyzed.setFactorConscientiousness(authorAnalyzed.getFactorConscientiousness() + feedback.getFactorConscientiousness());
-				authorAnalyzedRepository.save(authorAnalyzed);
+			Author toAuthor = authorRepository.findByAuthorId(request.getToAuthorId());
+			if (toAuthor != null && !toAuthor.isDeleted()) {
+				AuthorAnalyzed authorAnalyzed = authorAnalyzedRepository.findByAuthorId(request.getToAuthorId());
+				if (authorAnalyzed != null) {
+					authorAnalyzed.setFactorNeuroticism(authorAnalyzed.getFactorNeuroticism() + feedback.getFactorNeuroticism());
+					authorAnalyzed.setFactorExtraversion(authorAnalyzed.getFactorExtraversion() + feedback.getFactorExtraversion());
+					authorAnalyzed.setFactorOpenness(authorAnalyzed.getFactorOpenness() + feedback.getFactorOpenness());
+					authorAnalyzed.setFactorAgreeableness(authorAnalyzed.getFactorAgreeableness() + feedback.getFactorAgreeableness());
+					authorAnalyzed.setFactorConscientiousness(authorAnalyzed.getFactorConscientiousness() + feedback.getFactorConscientiousness());
+					authorAnalyzedRepository.save(authorAnalyzed);
+				}
+
+				// 상대방에 대한 보상
+				int reward = random.nextInt(3) + 1; // 1~3
+				toAuthor.setChocolates(toAuthor.getChocolates() + reward);
+				authorRepository.save(toAuthor);
 			}
 		}
+
+		// 자신에 대한 보상
+		int reward = random.nextInt(3) + 2; // 2~4
+		author.setChocolates(author.getChocolates() + reward);
+		authorRepository.save(author);
 		
 		return ApiResponse.make(OdResponseType.OK);
 	}
@@ -152,6 +165,7 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 		
 		return ApiResponse.make(OdResponseType.OK);
 	}
+	
 
 	private void checkToAuthorId(String fromAuthorId, String toAuthorId, Long diaryGroupId) throws OdException {
 		if (fromAuthorId.equals(toAuthorId)) {

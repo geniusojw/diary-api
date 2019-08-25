@@ -182,6 +182,17 @@ CREATE TABLE IF NOT EXISTS nickname
   CONSTRAINT nickname_pk PRIMARY KEY (nickname)
 );
 
+
+CREATE TABLE IF NOT EXISTS wise_saying
+(
+  saying_id BIGINT NOT NULL AUTO_INCREMENT,
+  language VARCHAR(10) NOT NULL,
+  nickname VARCHAR(50) NOT NULL,
+  saying VARCHAR(500) NOT NULL,
+  author_created TINYINT NOT NULL COMMENT '0: admin created, 1: author created' DEFAULT 0,
+  CONSTRAINT wise_saying_pk PRIMARY KEY (saying_id)
+);
+
 CREATE TABLE IF NOT EXISTS app
 (
   version VARCHAR(100) NOT NULL,

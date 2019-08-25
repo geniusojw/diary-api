@@ -55,7 +55,8 @@ public class AuthorDiaryController extends AbstractAuthorController {
 		
 		authorDiaryRepository.save(diary);
 
-		int reward = random.nextInt(3) + 4;
+		// 일기 보상
+		int reward = random.nextInt(3) + 2; // 2~4
 		author.setChocolates(author.getChocolates() + reward);
 		authorRepository.save(author);
 		authorRepository.insertChocolateHistory(author.getAuthorId(), 1, "TODAY DIARY");

@@ -49,7 +49,7 @@ public class AuthorLetterController extends AbstractAuthorController {
 //		// 같은 언어, 국가, 타임존이 확인된 사람. 7일동안 2번이상 일기를 쓴 사람에게.
 //		super.getDateTimeZone(timeZoneId);
 //		toAuthor = authorRepository.findRandomAuthor(author.getAuthorId(), language, country, timeZoneId);
-			
+		
 		if (toAuthor == null) {
 			throw new OdException(OdResponseType.USER_NOT_FOUND);
 		}

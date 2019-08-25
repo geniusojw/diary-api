@@ -27,6 +27,7 @@ import org.jerrioh.diary.domain.repo.FeedbackDiaryRepository;
 import org.jerrioh.diary.domain.repo.FeedbackRepository;
 import org.jerrioh.diary.domain.repo.NicknameRepository;
 import org.jerrioh.diary.domain.repo.PostRepository;
+import org.jerrioh.diary.domain.repo.WiseSayingRepository;
 import org.jerrioh.security.authentication.after.CompleteAuthorToken;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -57,6 +58,8 @@ public abstract class AbstractAuthorController extends AbstractController {
 	protected PostRepository postRepository;
 	@Autowired
 	protected NicknameRepository nicknameRepository;
+	@Autowired
+	protected WiseSayingRepository wiseSayingRepository;
 	@Autowired
 	protected OdMessageSource messageSource;
 
