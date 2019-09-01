@@ -4,15 +4,13 @@ public class AuthorDiaryGroupResponse {
 	
 	private String authorId;
 	private String nickname;
-	private boolean firstDay;
-	private boolean lastDay;
-	private String yesterdayDate;
 	private String yesterdayTitle;
-	private String yesterdayContent;
-	private String todayDate;
+	private String yesterdayContent;;
 	private String todayTitle;
 	private String todayContent;
-	
+	private boolean todayLike;
+	private boolean yesterdayGood;
+
 	public String getAuthorId() {
 		return authorId;
 	}
@@ -24,24 +22,6 @@ public class AuthorDiaryGroupResponse {
 	}
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
-	}
-	public boolean isFirstDay() {
-		return firstDay;
-	}
-	public void setFirstDay(boolean firstDay) {
-		this.firstDay = firstDay;
-	}
-	public boolean isLastDay() {
-		return lastDay;
-	}
-	public void setLastDay(boolean lastDay) {
-		this.lastDay = lastDay;
-	}
-	public String getYesterdayDate() {
-		return yesterdayDate;
-	}
-	public void setYesterdayDate(String yesterdayDate) {
-		this.yesterdayDate = yesterdayDate;
 	}
 	public String getYesterdayTitle() {
 		return yesterdayTitle;
@@ -55,12 +35,6 @@ public class AuthorDiaryGroupResponse {
 	public void setYesterdayContent(String yesterdayContent) {
 		this.yesterdayContent = yesterdayContent;
 	}
-	public String getTodayDate() {
-		return todayDate;
-	}
-	public void setTodayDate(String todayDate) {
-		this.todayDate = todayDate;
-	}
 	public String getTodayTitle() {
 		return todayTitle;
 	}
@@ -72,5 +46,17 @@ public class AuthorDiaryGroupResponse {
 	}
 	public void setTodayContent(String todayContent) {
 		this.todayContent = todayContent;
+	}
+	public boolean isTodayLike() {
+		return todayLike;
+	}
+	public void setTodayLike(boolean todayLike) {
+		this.todayLike = todayLike;
+	}
+	public boolean isYesterdayGood() {
+		return yesterdayGood;
+	}
+	public void setYesterdayGood(boolean yesterdayGood) {
+		this.yesterdayGood = yesterdayGood;
 	}
 }

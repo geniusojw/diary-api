@@ -36,7 +36,7 @@ public class AuthorController extends AbstractAuthorController {
 		author.setAuthorId(request.getAuthorId());
 		author.setAuthorCode(generateAuthorCode());
 		author.setNickname(generateNickname(language));
-		author.setDescription(generateDescription());
+		author.setDescription(robotOJ.startDescription(language));
 		author.setChocolates(20);
 		authorRepository.save(author);
 

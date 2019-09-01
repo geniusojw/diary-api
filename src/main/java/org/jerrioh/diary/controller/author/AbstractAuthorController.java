@@ -10,8 +10,8 @@ import org.jerrioh.common.OdMessageSource;
 import org.jerrioh.common.exception.OdAuthenticationException;
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
+import org.jerrioh.common.robot.RobotOJ;
 import org.jerrioh.common.util.OdLogger;
-import org.jerrioh.common.util.StringUtil;
 import org.jerrioh.diary.controller.AbstractController;
 import org.jerrioh.diary.domain.Author;
 import org.jerrioh.diary.domain.DiaryGroup;
@@ -36,6 +36,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public abstract class AbstractAuthorController extends AbstractController {
+	@Autowired
+	protected RobotOJ robotOJ;
 	@Autowired
 	protected AuthorRepository authorRepository;
 	@Autowired
@@ -149,24 +151,6 @@ public abstract class AbstractAuthorController extends AbstractController {
 		} else {
 			return nickname.getNickname();
 		}
-	}
-
-	protected String generateDescription() {
-		// TODO author의 상태를 기준으로 생성된다. 앱의 핵심기능 중 하나. 하루에 한번 가능.
-		return StringUtil.randomString("일기를 거의 안 쓰는 사람",
-				"쉬지않고 일만 하는 사람",
-				"움직이지 않고 밥만 먹는 사람",
-				"초콜렛 기부왕",
-				"똑똑한 사람",
-				"초콜렛 기부왕");
-	}
-	
-	protected String talkAboutYou() {
-		// TODO author의 상태를 기준으로 생성된다. 앱의 핵심기능 중 하나. 하루에 한번 가능.
-//		String aboutYou = "당신은 아름답다. 일기는 좀 더 써야 한다.";
-		return StringUtil.randomString("당신은 일기를 좀 더 써야된다.",
-				"일기모임에 참여해보세요. 등등",
-				"당신은 사실 멍청합니다. 사람들은 당신이 멍청하다고 생각합니다.");
 	}
 
 	protected String generatePostId() {

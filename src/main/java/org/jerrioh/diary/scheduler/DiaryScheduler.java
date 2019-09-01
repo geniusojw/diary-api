@@ -53,13 +53,13 @@ public class DiaryScheduler extends AbstractScheduler {
 				countryCountMap.compute(authorDiary.getCountry(), increaseCountFunction);
 				timeZoneIdCountMap.compute(authorDiary.getTimeZoneId(), increaseCountFunction);
 
-				if (language == null && languageCountMap.get(authorDiary.getLanguage()) >= 3) {
+				if (language == null && languageCountMap.get(authorDiary.getLanguage()) >= 2) {
 					language = authorDiary.getLanguage();
 				}
-				if (country == null && countryCountMap.get(authorDiary.getCountry()) >= 3) {
+				if (country == null && countryCountMap.get(authorDiary.getCountry()) >= 2) {
 					country = authorDiary.getCountry();
 				}
-				if (timeZoneId == null && timeZoneIdCountMap.get(authorDiary.getTimeZoneId()) >= 3) {
+				if (timeZoneId == null && timeZoneIdCountMap.get(authorDiary.getTimeZoneId()) >= 2) {
 					timeZoneId = authorDiary.getTimeZoneId();
 				}
 				
@@ -74,6 +74,13 @@ public class DiaryScheduler extends AbstractScheduler {
 				if (authorAnalyzed == null) {
 					authorAnalyzed = new AuthorAnalyzed();
 					authorAnalyzed.setAuthorId(author.getAuthorId());
+					
+					authorAnalyzed.setFactorNeuroticism(0);
+					authorAnalyzed.setFactorExtraversion(0);
+					authorAnalyzed.setFactorOpenness(0);
+					authorAnalyzed.setFactorAgreeableness(0);
+					authorAnalyzed.setFactorConscientiousness(0);
+					
 					OdLogger.info("new author!!");
 				}
 
@@ -83,12 +90,6 @@ public class DiaryScheduler extends AbstractScheduler {
 					authorAnalyzed.setLanguage(language);
 					authorAnalyzed.setCountry(country);
 					authorAnalyzed.setTimeZoneId(timeZoneId);
-					
-					authorAnalyzed.setFactorNeuroticism(0);
-					authorAnalyzed.setFactorExtraversion(0);
-					authorAnalyzed.setFactorOpenness(0);
-					authorAnalyzed.setFactorAgreeableness(0);
-					authorAnalyzed.setFactorConscientiousness(0);
 					
 					authorAnalyzedRepository.save(authorAnalyzed);
 					OdLogger.info("saved. authorId = {}", author.getAuthorId());

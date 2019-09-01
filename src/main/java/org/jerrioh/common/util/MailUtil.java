@@ -14,13 +14,13 @@ import javax.mail.internet.MimeMessage;
 public class MailUtil {
 
 	private static final String USERNAME = "jerrioh.today.diary@gmail.com";
-	private static final String PASSWORD = "!tod@dia85";
+	private static final String PASSWORD = "#today85dia";
 	private static final String PERSONAL = "TODAY DIARY";
 
 	// https://myaccount.google.com/security
 	private static final String MAIL_APP_ID = "jerrioh.today.diary";
-	private static final String MAIL_APP_PASSWORD = "uxphfdwseujxqgnn";
-
+	private static final String MAIL_APP_PASSWORD = "pdqdhdhfgmraixic";
+	
 	private static final Properties PROPS;
 	
 

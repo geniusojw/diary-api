@@ -19,6 +19,9 @@ public interface AuthorRepository extends JpaRepository<Author, String> {
 			+ "ORDER BY RAND() "
 			+ "LIMIT 1", nativeQuery = true)
 	Author findRandomAuthor(@Param("excludeAuthorId") String excludeAuthorId, @Param("language") String language, @Param("country") String country, @Param("timeZoneId") String timeZoneId);
+	
+	@Query(value = "SELECT NOW() > CREATION_TIME + INTERVAL :wiseSayingHours HOUR FROM AUTHOR_CHOCOLATES_HISTORY WHERE AUTHOR_ID = :authorId AND DETAILS LIKE 'ITEM_WISE_SAYING%' ORDER BY CREATION_TIME DESC LIMIT 1;", nativeQuery = true)
+	Integer wiseSayingGetable(String authorId, int wiseSayingHours);
 
 	@Query(value = "SELECT NOW() > CREATION_TIME + INTERVAL :hours HOUR FROM AUTHOR_DESCRIPTION_HISTORY WHERE AUTHOR_ID = :authorId ORDER BY SEQUENCE DESC LIMIT 1;", nativeQuery = true)
 	int descriptionChangable(@Param("authorId") String authorId, @Param("hours") int hours);

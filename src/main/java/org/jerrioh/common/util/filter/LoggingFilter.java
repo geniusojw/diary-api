@@ -26,7 +26,7 @@ public class LoggingFilter extends CommonsRequestLoggingFilter {
 		super.setIncludeClientInfo(true);
 		super.setIncludePayload(true);
 		super.setIncludeHeaders(true);
-		super.setMaxPayloadLength(1000);
+		super.setMaxPayloadLength(300);
 	}
 
 	private String beforeMessagePrefix = DEFAULT_BEFORE_MESSAGE_PREFIX;

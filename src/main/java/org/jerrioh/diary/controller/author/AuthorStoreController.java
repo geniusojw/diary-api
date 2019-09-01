@@ -16,6 +16,7 @@ import javax.validation.Valid;
 
 import org.jerrioh.common.exception.OdException;
 import org.jerrioh.common.exception.OdResponseType;
+import org.jerrioh.common.robot.RobotOJ.RobotResponse;
 import org.jerrioh.common.util.OdLogger;
 import org.jerrioh.diary.api.weather.WeatherClient;
 import org.jerrioh.diary.controller.OdHeaders;
@@ -72,8 +73,9 @@ public class AuthorStoreController extends AbstractAuthorController {
 	private final Random random = new Random();
 	
 	// configuration values
-	private static final int DESCRIPTION_AND_NICKNAME_CHANGE_HOURS = 1;
-	private static final int DIARY_GROUP_INITITAL_MAX_AUTHOR_COUNT = 2;
+	private static final int DESCRIPTION_AND_NICKNAME_CHANGE_HOURS = 0;
+	private static final int WISE_SAYING_HOURS = 3;
+	private static final int DIARY_GROUP_INITITAL_MAX_AUTHOR_COUNT = 3;
 	private static final int DIARY_GROUP_INITITAL_DURATION_DAYS = 3;
 	private static final int DIARY_GROUP_LIMIT_MAX_AUTHOR_COUNT = 7;
 	private static final int DIARY_GROUP_LIMIT_DURATION_DAYS = 7;
@@ -81,12 +83,12 @@ public class AuthorStoreController extends AbstractAuthorController {
 	private Map<String, Long> authorTimestamps = new ConcurrentHashMap<>();
 	
 	static enum Item {
-		WISE_SAYING					("ITEM_WISE_SAYING", 2),
+		WISE_SAYING					("ITEM_WISE_SAYING", 1),
 		CREATE_WISE_SAYING			("ITEM_CREATE_WISE_SAYING", 15),
 		WEATHER						("ITEM_WEATHER", 0),
 		POST_IT						("ITEM_POST_IT", 0),
 		CHANGE_DESCRIPTION			("ITEM_CHANGE_DESCRIPTION", 3),
-		CHANGE_NICKNAME				("ITEM_CHANGE_NICKNAME", 3),
+		CHANGE_NICKNAME				("ITEM_CHANGE_NICKNAME", 2),
 		PURCHASE_THEME				("ITEM_PURCHASE_THEME", 10),
 		PURCHASE_MUSIC				("ITEM_PURCHASE_MUSIC", 10),
 		DIARY_GROUP_INVITATION		("ITEM_DIARY_GROUP_INVITATION", 4),
@@ -110,6 +112,11 @@ public class AuthorStoreController extends AbstractAuthorController {
 		
 		for (Item item : Item.values()) {
 			priceMap.put(item.itemId, item.price);
+		}
+		
+		Integer getable = authorRepository.wiseSayingGetable(author.getAuthorId(), WISE_SAYING_HOURS);
+		if (getable != null && getable == 0) {
+			priceMap.put(Item.WISE_SAYING.itemId, -1);
 		}
 		Post post = postRepository.findMyNotPosted(author.getAuthorId());
 		if (post != null) {
@@ -248,19 +255,22 @@ public class AuthorStoreController extends AbstractAuthorController {
 	@Transactional(rollbackFor = Exception.class)
 	@PostMapping(value = "/change-description")
 	public ResponseEntity<ApiResponse<ChangeDescriptionResponse>> changeDescription(
-			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp) throws OdException {
+			@RequestHeader(value = OdHeaders.TIMESTAMP) Long timestamp,
+			@RequestHeader(value = OdHeaders.LANGUAGE) String language) throws OdException {
 		this.ignoreDuplicatedRequest(timestamp);
 		this.purchasePreCheck(Item.CHANGE_DESCRIPTION, timestamp);
 		
 		Author author = this.getAuthor();
-		if (authorRepository.descriptionChangable(author.getAuthorId(),
-				DESCRIPTION_AND_NICKNAME_CHANGE_HOURS) == 0) {
+		if (authorRepository.descriptionChangable(author.getAuthorId(), DESCRIPTION_AND_NICKNAME_CHANGE_HOURS) == 0) {
 			OdLogger.info("Can not change description yet.");
 			throw new OdException(OdResponseType.PRECONDITION_FAILED);
 		}
 
-		String talkAboutYou = this.talkAboutYou();
-		String description = this.generateDescription();
+		RobotResponse robotResponse = robotOJ.talkToRobot(language, author.getAuthorId());
+		
+		String message = robotResponse.getMessage();
+		String description = robotResponse.getDescription();
+		
 		author.setDescription(description);
 
 		authorRepository.save(author);
@@ -269,7 +279,7 @@ public class AuthorStoreController extends AbstractAuthorController {
 		this.purchaseComplete(Item.CHANGE_DESCRIPTION, description);
 		
 		ChangeDescriptionResponse response = new ChangeDescriptionResponse();
-		response.setAboutYou(talkAboutYou);
+		response.setAboutYou(message);
 		response.setDescription(description);
 		return ApiResponse.make(OdResponseType.OK, response);
 	}

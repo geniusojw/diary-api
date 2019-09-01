@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS author_chocolates_history
   sequence BIGINT NOT NULL,
   chocolates_changed INT(11) NOT NULL,
   chocolates_result INT(11) NOT NULL,
-  details VARCHAR(50) NOT NULL,
+  details VARCHAR(150) NOT NULL,
   creation_time TIMESTAMP NOT NULL DEFAULT now(),
   CONSTRAINT author_chocolates_history_pk PRIMARY KEY (author_id, sequence)
 );
@@ -172,6 +172,30 @@ CREATE TABLE IF NOT EXISTS feedback
   factor_agreeableness INT(11) NOT NULL,
   factor_conscientiousness INT(11) NOT NULL,
   CONSTRAINT feedback_pk PRIMARY KEY (feedback_author_type)
+);
+
+-- sum of abs(factors) must be 10000.
+CREATE TABLE IF NOT EXISTS feedback_result
+(
+  feedback_result_id BIGINT NOT NULL AUTO_INCREMENT,
+  korean_description VARCHAR(100) NOT NULL,
+  english_description VARCHAR(100) NOT NULL,
+  ratio_neuroticism INT(11) NOT NULL COMMENT 'max : -10000 ~ 10000',
+  ratio_extraversion INT(11) NOT NULL COMMENT 'max : -10000 ~ 10000',
+  ratio_openness INT(11) NOT NULL COMMENT 'max : -10000 ~ 10000',
+  ratio_agreeableness INT(11) NOT NULL COMMENT 'max : -10000 ~ 10000',
+  ratio_conscientiousness INT(11) NOT NULL COMMENT 'max : -10000 ~ 10000',
+  CONSTRAINT feedback_result_pk PRIMARY KEY (feedback_result_id)
+);
+
+CREATE TABLE IF NOT EXISTS feedback_message
+(
+  feedback_message_id BIGINT NOT NULL AUTO_INCREMENT,
+  korean_description VARCHAR(100) NOT NULL,
+  english_description VARCHAR(100) NOT NULL,
+  factor_type INT(11) NOT NULL COMMENT '0: neuroticism, 1: extraversion, 2: openness, 3: agreeableness, 4: conscientiousness',
+  negative TINYINT NOT NULL COMMENT '0: positive, 1: negative',
+  CONSTRAINT feedback_message_pk PRIMARY KEY (feedback_message_id)
 );
 
 CREATE TABLE IF NOT EXISTS nickname

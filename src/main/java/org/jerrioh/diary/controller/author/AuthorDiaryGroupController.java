@@ -19,6 +19,7 @@ import org.jerrioh.diary.controller.author.payload.DiaryGroupRespondRequest;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupRespondRequest.InvitationResponseType;
 import org.jerrioh.diary.controller.author.payload.DiaryGroupResponse;
 import org.jerrioh.diary.controller.author.payload.UpdateDiaryGroupRequest;
+import org.jerrioh.diary.controller.author.payload.YesterdayDiariesResponse;
 import org.jerrioh.diary.controller.payload.ApiResponse;
 import org.jerrioh.diary.domain.Author;
 import org.jerrioh.diary.domain.AuthorAnalyzed;
@@ -28,6 +29,7 @@ import org.jerrioh.diary.domain.AuthorLetter.LetterType;
 import org.jerrioh.diary.domain.DiaryGroup;
 import org.jerrioh.diary.domain.DiaryGroupAuthor;
 import org.jerrioh.diary.domain.DiaryGroupAuthor.AuthorStatus;
+import org.jerrioh.diary.domain.FeedbackDiary.FeedbackDiaryType;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -157,7 +159,7 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 	}
 	
 	@GetMapping("/yesterday-diaries")
-	public ResponseEntity<ApiResponse<List<AuthorDiaryGroupResponse>>> readYesterdayDiaries() throws OdException {
+	public ResponseEntity<ApiResponse<YesterdayDiariesResponse>> readYesterdayDiaries() throws OdException {
 		Author author = super.getAuthor();
 		DiaryGroup diaryGroup = getStartedDiaryGroup(author);
 		
@@ -175,44 +177,59 @@ public class AuthorDiaryGroupController extends AbstractAuthorController {
 		boolean isLastDay = lastDayString.equals(todayString);
 		
 		// TODO one to many, many to one 적용 -> performance 개선
-		List<AuthorDiaryGroupResponse> responses = new ArrayList<>();
+		List<AuthorDiaryGroupResponse> authorDiaryGroupResponses = new ArrayList<>();
 		
 		List<DiaryGroupAuthor> diaryGroupAuthors = diaryGroupAuthorRepository.findByDiaryGroupId(diaryGroup.getDiaryGroupId());
 		for (DiaryGroupAuthor diaryGroupAuthor : diaryGroupAuthors) {
 			if (diaryGroupAuthor.getAuthorStatus() != AuthorStatus.ACCEPT) {
 				continue;
 			}
-			
 			Author authorParticipated = authorRepository.findByAuthorId(diaryGroupAuthor.getAuthorId());
 			if (authorParticipated == null || authorParticipated.isDeleted()) {
 				continue;
 			}
 
-			AuthorDiaryGroupResponse response = new AuthorDiaryGroupResponse();
-			response.setAuthorId(authorParticipated.getAuthorId());
-			response.setNickname(authorParticipated.getNickname());
-			response.setFirstDay(isFirstDay);
-			response.setLastDay(isLastDay);
+			AuthorDiaryGroupResponse authorDiaryGroupResponse = new AuthorDiaryGroupResponse();
+			authorDiaryGroupResponse.setAuthorId(authorParticipated.getAuthorId());
+			authorDiaryGroupResponse.setNickname(authorParticipated.getNickname());
 			
 			AuthorDiary todayDiary = authorDiaryRepository.findByAuthorIdAndDiaryDate(authorParticipated.getAuthorId(), todayString);
 			if (todayDiary != null && !todayDiary.isDeleted()) {
-				response.setTodayDate(todayDiary.getDiaryDate());
-				response.setTodayTitle(todayDiary.getTitle());
-				response.setTodayContent(todayDiary.getContent());
+				authorDiaryGroupResponse.setTodayTitle(todayDiary.getTitle());
+				authorDiaryGroupResponse.setTodayContent(todayDiary.getContent());
 			}
 			
 			if (!isFirstDay) {
 				AuthorDiary yesterdayDiary = authorDiaryRepository.findByAuthorIdAndDiaryDate(authorParticipated.getAuthorId(), yesterdayString);
 				if (yesterdayDiary != null && !yesterdayDiary.isDeleted()) {
-					response.setYesterdayDate(yesterdayDiary.getDiaryDate());
-					response.setYesterdayTitle(yesterdayDiary.getTitle());
-					response.setYesterdayContent(yesterdayDiary.getContent());
+					authorDiaryGroupResponse.setYesterdayTitle(yesterdayDiary.getTitle());
+					authorDiaryGroupResponse.setYesterdayContent(yesterdayDiary.getContent());
 				}
 			}
-			responses.add(response);
+			
+			boolean todayLike = false;
+			boolean yesterdayGood = false;
+			if (!authorParticipated.getAuthorId().equals(author.getAuthorId())) {
+				todayLike = feedbackDiaryRepository.findByFromAuthorIdAndToAuthorIdAndAndDiaryDateAndFeedbackDiaryType(
+						authorParticipated.getAuthorId(), author.getAuthorId(), todayString, FeedbackDiaryType.LIKE) != null;
+				
+				yesterdayGood = feedbackDiaryRepository.findByFromAuthorIdAndToAuthorIdAndAndDiaryDateAndFeedbackDiaryType(
+						authorParticipated.getAuthorId(), author.getAuthorId(), yesterdayString, FeedbackDiaryType.GOOD) != null;
+			}
+			authorDiaryGroupResponse.setTodayLike(todayLike);
+			authorDiaryGroupResponse.setYesterdayGood(yesterdayGood);
+			
+			authorDiaryGroupResponses.add(authorDiaryGroupResponse);
 		}
 		
-		return ApiResponse.make(OdResponseType.OK, responses);
+		YesterdayDiariesResponse response = new YesterdayDiariesResponse();
+		response.setFirstDay(isFirstDay);
+		response.setLastDay(isLastDay);
+		response.setTodayDate(todayString);
+		response.setYesterdayDate(yesterdayString);
+		response.setAuthorDiaries(authorDiaryGroupResponses);
+		
+		return ApiResponse.make(OdResponseType.OK, response);
 	}
 
 	private void beInvitedAndReceiveLetter(Author author, DiaryGroup diaryGroup) {

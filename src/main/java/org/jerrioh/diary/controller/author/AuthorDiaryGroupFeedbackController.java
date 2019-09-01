@@ -120,15 +120,10 @@ public class AuthorDiaryGroupFeedbackController extends AbstractAuthorController
 					authorAnalyzed.setFactorConscientiousness(authorAnalyzed.getFactorConscientiousness() + feedback.getFactorConscientiousness());
 					authorAnalyzedRepository.save(authorAnalyzed);
 				}
-
-				// 상대방에 대한 보상
-				int reward = random.nextInt(3) + 1; // 1~3
-				toAuthor.setChocolates(toAuthor.getChocolates() + reward);
-				authorRepository.save(toAuthor);
 			}
 		}
 
-		// 자신에 대한 보상
+		// 피드백에 대한 보상
 		int reward = random.nextInt(3) + 2; // 2~4
 		author.setChocolates(author.getChocolates() + reward);
 		authorRepository.save(author);
